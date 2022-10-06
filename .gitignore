@@ -6,3 +6,5 @@ public/js/compiled/
 *~
 src/clj/dummett_library/.clj-kondo/
 src/clj/dummett_library/.lsp/
+node_modules/
+package-lock.json

@@ -5,6 +5,7 @@ We all have had a quote from Dummett's writings on our mind before, but can't re
 
 * Development
 ** Getting Started
+*** Backend (Clojure)
 To start a repl call
 
 #+BEGIN_SRC bash
@@ -30,5 +31,32 @@ Finally, run a query for "Frege" with
 #+BEGIN_SRC clojure
   (query "Frege")
 #+END_SRC
+
+To set up the backend http server call
+
+#+BEGIN_SRC clojure
+(run!)
+#+END_SRC
+
+*** Frontend (Clojurescript)
+
+Open a separate terminal window. To install the node dependencies call
+
+#+BEGIN_SRC sh
+npm install --save-dev shadow-cljs
+#+END_SRC
+
+To run the frontend call
+#+BEGIN_SRC sh
+shadow-cljs watch app
+#+END_SRC
+
+When you see
+#+BEGIN_SRC sh
+[:app] Configuring build.
+[:app] Compiling ...
+[:app] Build completed. (247 files, 246 compiled, 0 warnings, 16.45s)
+#+END_SRC
+or something like it the app is ready to visit. It is served on [[http://localhost:8700]]
 
 
