@@ -1,0 +1,34 @@
+#+title: Dummett Library
+#+author: Andrew Parisi
+
+We all have had a quote from Dummett's writings on our mind before, but can't remember where h wrote it. The Dummett Library is the solution to that problem. This library lets users search for text in Dummett's writings. It returns the top matches for the search along with some context around the matched quote.
+
+* Development
+** Getting Started
+To start a repl call
+
+#+BEGIN_SRC bash
+  clj -M:dev/repl
+#+END_SRC
+
+Once in a repl switch to the core namespace and load it up
+
+#+BEGIN_SRC clojure
+  (do
+    (ns dummett-library.core)
+    (use 'dummett-library.core :reload))
+#+END_SRC
+
+In order to reindex the sample library call
+
+#+BEGIN_SRC clojure
+  (reindex-dev!)
+#+END_SRC
+
+Finally, run a query for "Frege" with
+
+#+BEGIN_SRC clojure
+  (query "Frege")
+#+END_SRC
+
+

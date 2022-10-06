@@ -1,0 +1,8 @@
+.cpcache/
+.nrepl-port
+.shadow-cljs/
+opt/
+public/js/compiled/
+*~
+src/clj/dummett_library/.clj-kondo/
+src/clj/dummett_library/.lsp/

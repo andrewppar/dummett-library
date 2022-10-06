@@ -1,0 +1,43 @@
+{:root #env DATA_DIR
+ :philosophy
+ {:root "/Philosophy"
+  :article
+  {:root "/Articles/zNo Need to OCR/"
+   :pattern
+   {:regex [:cat
+            [:capture [:+ :word]]
+            " - "
+            [:capture [:+ [:alt :word :non-word]]]
+            ".pdf"]
+    :matches [:author :title]}
+   :documents
+   ["Dummett - Conocimiento Practico y Conocimiento del Lenguaje.pdf"
+    "Dummett - How Should We Conceive of Time.pdf"
+    "Dummett - Hume's Atomism about Events -- A Response to Ulrich Meyer.pdf"
+    "Dummett - Metaphysical Necessity.pdf"
+    "Dummett - On Analytical Philosophy.pdf"
+    "Dummett - Seeing Things Move.pdf"
+    "Dummett - The Dewey Lectures 2002 -- Truth and the Past.pdf"
+    "Dummett - The Place of Philosophy in European Culture.pdf"]
+   }
+  :book
+  {:root "/Books/"
+   :pattern 
+   {:regex [:cat
+            [:capture [:+ :word]]
+            " - "
+            [:capture [:+ [:alt :word :non-word]]]
+            " ["
+            [:capture [:+ :word]]
+            "].pdf"]
+    :matches
+    [:author :title :doc-type]}
+   :documents
+   ["Dummett - The Logical Basis of Metaphysics [Book].pdf"
+    "Dummett - The Nature and Future of Philosophy [Book].pdf"
+    "Dummett - Thought and Reality [Book].pdf"
+    "Dummett - Truth and the Past [Book].pdf"]
+   }
+  }
+ }
+ 
