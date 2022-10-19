@@ -1,4 +1,5 @@
 (ns dummett-library.events
+  (:require-macros [adzerk.env  :as env])
   (:require
    [ajax.core                   :as ajax]
    [day8.re-frame.http-fx]
@@ -7,12 +8,16 @@
    [re-frame.core               :as rf]))
 
 
+(env/def DUMMETT_SERVER "NOPE")
+
+
 (rf/reg-event-fx
  ::fetch-search-results
  (fn [_ [_ search-string]]
+   (println DUMMETT_SERVER)
    (let [encoded-search (gstring/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
-                         "http://" "localhost:4000"
+                         "http://" DUMMETT_SERVER
                          "/query?query-string=" encoded-search)
                    :method :post
                    :format (ajax/transit-request-format)

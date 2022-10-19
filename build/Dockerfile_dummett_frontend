@@ -1,0 +1,16 @@
+FROM veer66/shadow-cljs
+
+COPY ./public/index.html public/index.html
+COPY ./public/css public/css
+COPY ./package.json package.json
+COPY ./src src
+COPY ./shadow-cljs.edn shadow-cljs.edn
+
+ARG BACKEND
+ENV DUMMETT_SERVER=$BACKEND
+
+RUN npm install --save-dev shadow-cljs
+RUN npm install react react-dom create-react-class
+RUN shadow-cljs compile app
+
+CMD shadow-cljs watch app

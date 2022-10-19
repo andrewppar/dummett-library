@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  dummett-backend:
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile_dummett_backend
+      args:
+        - INDEX_DIR=$INDEX_LOCATION
+    ports:
+      - "4000:4000"
+    networks:
+      - dummett-backend
+  dummett-frontend:
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile_dummett_frontend
+      args:
+        - BACKEND=$DUMMETT_SERVER
+    ports:
+      - "8700:8700"
+      - "9630:9630"
+    networks:
+      - dummett-frontend
+      - dummett-backend
+  nginx:
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile_dummett_nginx
+    ports:
+      - "80:80"
+    networks:
+      - dummett-backend
+      - dummett-frontend
+      - nginx
+networks:
+  dummett-backend:
+  dummett-frontend:
+  nginx:

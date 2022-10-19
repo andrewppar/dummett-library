@@ -1,4 +1,5 @@
 (ns dummett-library.views
+  (:require-macros [adzerk.env :as env])
   (:require
    [clojure.string :as string]
    [dummett-library.events :as events]
@@ -6,19 +7,37 @@
    [re-frame.core          :as rf]
    [reagent.core           :as r]))
 
+(env/def STANDALONE "true")
+
 (defn navbar []
-  [:nav.navbar.is-inverted
-   {:class "navbar is-inverted is-fixed-top"}
-   [:div.container
-    [:div.navbar-brand [:a.navbar-item
-                        {:class "is-size-2"
-                         :href "/"
-                         :style {:font-weight :bold}} "𝜑 "]]
-    [:div.navbar-start
-     [:nav {:class "level"}
-      [:p {:class "level-item has-text-centered has-text-white is-size-2"}
-       "Dummett Library"]]]
-    ]])
+  (r/with-let [expanded? (r/atom false)]
+    [:nav.navbar.is-inverted
+     {:class "navbar is-inverted is-fixed-top"}
+     [:div.container
+      [:div.navbar-brand
+       [:a.navbar-item
+        {:class "is-size-2"
+         :href "/dummett"
+         :style {:font-weight :bold}} "𝜑"]
+       [:span.navbar-burger.burger
+        {:data-target :nav-menu
+         :on-click #(swap! expanded? not)
+         :class (when @expanded? :is-active)}
+        [:span][:span][:span]]]
+      [:div.navbar-start
+       [:div.navbar-item
+        {:class "has-text-centered has-text-white is-size-2"
+         :style {:text-transform :capitalize}}
+        "Dummett Library"]]
+      [:div#nav-menu.navbar-menu
+       {:class (when @expanded? :is-active)}
+       [:div.navbar-end
+        (when (= STANDALONE "false")
+          [:a.navbar-item
+           {:class "has-text-centered has-text-white"
+            :href "/"
+            :style {:text-transform :lowercase}}
+           "λogos"])]]]]))
 
 (defn show-search-result [result]
   (let [fragment (first (get result :fragments))]
@@ -34,8 +53,10 @@
          [:table
           {:class (str "table " (when @hide? "is-hidden"))}
           [:tr
-           [:td [:div {:dangerouslySetInnerHTML {:__html fragment}}]]]]]
-        ]])))
+           [:td
+            [:div
+             {:dangerouslySetInnerHTML
+              {:__html fragment}}]]]]]]])))
 
 (defn show-all-results [search-results]
   (map
@@ -65,7 +86,8 @@
                          (get :text)
                          (string/replace #"\n" "</br>"))}}]]
     [:footer.modal-card-foot (get focal-result :page)]]])
-    
+
+(def search-ran? (r/atom false))
 
 (defn search-result-section
   [search-results]
@@ -74,7 +96,7 @@
      [:div {:class "hero-body"}
       [:div {:id "other-text"}
        (if-not (seq search-results)
-         ""
+         (if @search-ran? "No results found" "")
          [:article {:class "panel is-primary"}
           [:p.panel-heading "Search Results"]
           (if (nil? focal-result)
@@ -82,6 +104,7 @@
             (show-focal-result focal-result))])]]]))
 
 (defn search [search-string]
+  (reset! search-ran? true)
   (rf/dispatch [::events/search search-string]))
 
 (defn clear-search-results []
@@ -95,6 +118,10 @@
       [:div.section {:class "is-small"}
        [:div {:class "hero-body"}
         [:div {:class "field has-addons"}
+         [:div.control
+          [:a {:class "button is-danger"
+               :on-click #(clear-search-results)}
+           "Clear"]]
          [:div.control
           [:a {:class "button is-primary"
                :on-click
@@ -115,9 +142,5 @@
                                               (. js/document)
                                               .-value)]
                          (search search-text))))}]]]]]
-      [search-result-section search-results]
-      [:div.section {:class "is-small"}
-       [:button {:class "button is-danger"
-                 :on-click #(clear-search-results)}
-        "Clear"]]]]))
+      [search-result-section search-results]]]))
 

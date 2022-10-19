@@ -4,7 +4,7 @@
 
  :dependencies [[binaryage/devtools    "0.9.7"]
                 [cljs-ajax             "0.7.5"]
-                ;;[cljs-http.client      "0.1.46"]
+                [adzerk/env            "0.4.0"]
                 [day8.re-frame/http-fx "0.2.4"]
                 [reagent               "1.1.0"]
                 [re-frame              "0.10.7"]]
@@ -14,7 +14,7 @@
 
  :builds
  {:app {:target :browser
-        :output-dir "public/js/compiled"
+        :output-dir "../logos/public/js/compiled"
         :asset-path "/js/compiled"
 
         :modules

@@ -43,7 +43,8 @@ To set up the backend http server call
 Open a separate terminal window. To install the node dependencies call
 
 #+BEGIN_SRC sh
-npm install --save-dev shadow-cljs
+  npm install --save-dev shadow-cljs
+  npm install react react-dom create-react-class
 #+END_SRC
 
 To run the frontend call
@@ -59,4 +60,17 @@ When you see
 #+END_SRC
 or something like it the app is ready to visit. It is served on [[http://localhost:8700]]
 
+* Running
+
+All the above services are dockerized and can be coordinated as a single endpoint on your machine using nginx. This can all be orchestrated with the =docker-compose.yml= file in this directory. To build the app run
+
+#+BEGIN_SRC sh 
+docker compose build 
+#+END_SRC
+
+where =$DUMMET_SERVER= and =$INDEX_LOCATION= are set by the =.envrc= file in this directory. To run the app call
+
+#+BEGIN_SRC sh up
+docker compose up
+#+END_SRC
 

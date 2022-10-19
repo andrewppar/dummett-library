@@ -17,8 +17,7 @@
   org.apache.lucene/lucene-suggest     {:mvn/version "9.2.0"}
   org.apache.tika/tika-parsers         {:mvn/version "1.2"}
   ring-cors/ring-cors                  {:mvn/version "0.1.13"}
-  ring/ring-defaults                   {:mvn/version "0.3.2"}
-  }
+  ring/ring-defaults                   {:mvn/version "0.3.2"}}
  :aliases
  {:prod/run
   {:exec-fn dummett-library.core/run!}

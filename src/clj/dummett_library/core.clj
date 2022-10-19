@@ -9,8 +9,7 @@
    [dummett-library.state    :as state]
    [org.httpkit.server       :as server]
    [ring.middleware.cors     :as cors]
-   [ring.middleware.defaults :as middleware]
-   ))
+   [ring.middleware.defaults :as middleware]))
 
 (defn init!
   ([]
@@ -95,7 +94,7 @@
   (route/not-found "<h1>Page not found</h1>"))
 
 (defn run! [& args]
-  (let [port 4000]
+  (let [port 5000]
     (init!)
     (server/run-server
      (cors/wrap-cors
