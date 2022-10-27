@@ -14,7 +14,6 @@
 (rf/reg-event-fx
  ::fetch-search-results
  (fn [_ [_ search-string]]
-   (println DUMMETT_SERVER)
    (let [encoded-search (gstring/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
                          "http://" DUMMETT_SERVER

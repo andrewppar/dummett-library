@@ -19,11 +19,12 @@
         {:class "is-size-2"
          :href "/dummett"
          :style {:font-weight :bold}} "𝜑"]
-       [:span.navbar-burger.burger
-        {:data-target :nav-menu
-         :on-click #(swap! expanded? not)
-         :class (when @expanded? :is-active)}
-        [:span][:span][:span]]]
+       (when (= STANDALONE "false")
+         [:span.navbar-burger.burger
+          {:data-target :nav-menu
+           :on-click #(swap! expanded? not)
+           :class (when @expanded? :is-active)}
+          [:span][:span][:span]])]
       [:div.navbar-start
        [:div.navbar-item
         {:class "has-text-centered has-text-white is-size-2"
@@ -114,7 +115,8 @@
   (let [search-results @(rf/subscribe [::subs/search-results])]
     [:div.app
      [:div {:class "has-navbar-fixed-top"}
-      [navbar]
+      [:div.section
+      [navbar]]
       [:div.section {:class "is-small"}
        [:div {:class "hero-body"}
         [:div {:class "field has-addons"}
