@@ -1,0 +1,15 @@
+FROM clojure:lein
+
+COPY ./src /tmp/src
+COPY ./resources /tmp/resources
+COPY ./deps.edn /tmp/deps.edn
+COPY ./dependencies.sh /tmp/dependencies.sh
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN apt install -y poppler-utils
+RUN add-apt-repository ppa:alex-p/tesseract-ocr-devel
+RUN apt install -y tesseract
+RUN bash /tmp/dependencies.sh
+
+
+CMD ["clj", "-M:prod/run"]

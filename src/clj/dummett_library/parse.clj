@@ -77,3 +77,12 @@
                                 (= (get item :tag) :title)))]
           (first (get (first tag-title) :content))))))
   )
+
+
+(comment
+  (spit "/Users/andrewparisi/Documents/job-applications/check-fit/resources/resume.txt"
+        (first
+         (xml-map-pages
+          (pdf->xml-map "/Users/andrewparisi/Documents/job-applications/rent/resume/resume.pdf")))
+        )
+  )

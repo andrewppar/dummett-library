@@ -10,3 +10,4 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 else
     echo "No installation instructions for this operating system."
     echo "Please consult the README to install manually."
+fi
