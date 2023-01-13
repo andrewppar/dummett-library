@@ -35,6 +35,8 @@
   (IndexSearcher. (DirectoryReader/open index-store)))
 
 
+;;; TODO: There's a lot of mixing IO here that makes testing difficult
+;;; try to pull those apart.
 
 (defn index-document!
   "Given a filepath to a pdf document, add each page of that pdf

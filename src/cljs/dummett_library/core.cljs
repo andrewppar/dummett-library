@@ -5,12 +5,14 @@
    [ajax.core             :as ajax]
    [dummett-library.views :as views]))
 
-;; define your app data so that it doesn't get over-written on reload
+;; define app data so that it doesn't get over-written on reload
 
 (defn local-uri? [{:keys [uri]}]
   (not (re-find #"^\w+?://" uri)))
 
-(defn default-headers [request]
+(defn default-headers
+  "The default headers that are send along with a request"
+  [request]
   (if (local-uri? request)
     (-> request
         (update :headers #(merge {"x-csrf-token" js/csrfToken} %)))
@@ -24,8 +26,7 @@
          (ajax/to-interceptor {:name "default headers"
                                :request default-headers})))
 
-(defonce app-state (atom {:text "Hello world!"}))
-
+;; TODO: Remove this if it is not being used
 (defn quote []
   (let [data (atom "quote app")]
     (fn []

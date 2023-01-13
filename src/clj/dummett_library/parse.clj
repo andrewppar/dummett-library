@@ -29,7 +29,7 @@
     (get m k)))
 
 
-(defn ^:private xml-page->text
+(defn xml-page->text
   "Convert an map of an xml representation of a page to text"
   [xml-page]
   (->> xml-page

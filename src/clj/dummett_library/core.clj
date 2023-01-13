@@ -60,8 +60,9 @@
     (map #(assoc % :query-string query-string)
          (query/query searcher analyzer store query-string doc-types))))
 
-(defn health-check [_]
+(defn health-check
   "Perform a health check on the dummett library"
+  [_]
   {:status 200
    :headers {"Content-Type" "text/json"
              "Access-Control-Allow-Origin" "*"
@@ -106,7 +107,7 @@
 (defn run!
   "Run the application for search."
   [& args]
-  (let [port 5000]
+  (let [port 4000]
     (init!)
     (server/run-server
      (cors/wrap-cors

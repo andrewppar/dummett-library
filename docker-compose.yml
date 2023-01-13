@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./build/Dockerfile_dummett_backend
       args:
-        - INDEX_DIR=$INDEX_LOCATION
+        - INDEX_DIR=/opt/dummett
     ports:
       - "4000:4000"
     networks:

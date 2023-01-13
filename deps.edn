@@ -23,6 +23,10 @@
   {:exec-fn dummett-library.core/run!}
   :prod/reindex
   {:exec-fn dummett-library.core/reindex!}
+  :dev/test
+  {:extra-deps {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+   :exec-fn kaocha.runner/exec-fn
+   :exec-args {}}
   :dev/repl
   {:extra-deps
    {nrepl/nrepl       {:mvn/version "0.9.0"}

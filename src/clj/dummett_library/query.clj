@@ -27,7 +27,7 @@
     (.build builder)))
 
 (defn new-query
-  "Run a query for pages matching text"
+  "Build a query for pages matching text"
   [analyzer query document-types]
   (let [builder (BooleanQuery$Builder.)
         term    (-> "text"
@@ -116,8 +116,8 @@
 
 (defn query
   "Run a query against the index."
-  [searcher analyzer store query-string document-type]
-  (let [query         (new-query analyzer query-string document-type)
+  [searcher analyzer store query-string document-types]
+  (let [query         (new-query analyzer query-string document-types)
         hits-per-page (get @state/state ::state/hits-per-page)
         formatter     (get @state/state ::state/formatter)
         scorer        (QueryScorer. query)

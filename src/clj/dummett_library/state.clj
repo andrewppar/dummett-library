@@ -4,7 +4,7 @@
    [dummett-library.analyze  :as analyze]
    [dummett-library.index    :as index]
    [integrant.core           :as ig])
-  (:import 
+  (:import
    (org.apache.lucene.search.highlight SimpleHTMLFormatter)))
 
 (defmethod ig/init-key ::catalog [_ _]
@@ -42,7 +42,7 @@
   {::catalog []
    ::hits-per-page []
    ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
+   ::store {:index-location (ig/ref ::index-location)}
    ::analyzer []
    ::searcher {:store (ig/ref ::store)}
    ::formatter []})
@@ -50,7 +50,7 @@
 (def reindex-config
   {::catalog []
    ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
+   ::store {:index-location (ig/ref ::index-location)}
    ::analyzer []
    ::writer {:analyzer (ig/ref ::analyzer)
              :index-location (ig/ref ::index-location)}})
@@ -70,4 +70,3 @@
     (ig/halt! @state components)
     (ig/halt! @state))
   (reset! state nil))
-

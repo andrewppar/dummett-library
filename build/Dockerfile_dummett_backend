@@ -1,9 +1,10 @@
 FROM clojure
 
-COPY ./src src
+
 COPY ./deps.edn deps.edn
 COPY ./resources resources
 COPY ./opt opt
+COPY ./src src
 
 ARG INDEX_DIR
 ENV INDEX_LOCATION=$INDEX_DIR

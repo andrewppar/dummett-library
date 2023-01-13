@@ -60,12 +60,20 @@ When you see
 #+END_SRC
 or something like it the app is ready to visit. It is served on [[http://localhost:8700]]
 
+* Testing
+
+To run tests call
+
+#+BEGIN_SRC sh
+clj -X:dev/test
+#+END_SRC
+
 * Running
 
 All the above services are dockerized and can be coordinated as a single endpoint on your machine using nginx. This can all be orchestrated with the =docker-compose.yml= file in this directory. To build the app run
 
-#+BEGIN_SRC sh 
-docker compose build 
+#+BEGIN_SRC sh
+docker compose build
 #+END_SRC
 
 where =$DUMMET_SERVER= and =$INDEX_LOCATION= are set by the =.envrc= file in this directory. To run the app call
@@ -73,4 +81,3 @@ where =$DUMMET_SERVER= and =$INDEX_LOCATION= are set by the =.envrc= file in thi
 #+BEGIN_SRC sh up
 docker compose up
 #+END_SRC
-
