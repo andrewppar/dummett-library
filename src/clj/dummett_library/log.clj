@@ -1,5 +1,5 @@
 (ns dummett-library.log
-  (:require  
+  (:require
    [cheshire.core    :as cheshire]
    [clojure.edn     :as edn]
    [taoensso.timbre :as timbre]))
@@ -11,7 +11,9 @@
                                :level level
                                :message event})))
 
-(defn log [level object]
+(defn log
+  "Log the object `object` at the specified `level`"
+  [level object]
   (case level
     :trace (timbre/trace object)
     :debug (timbre/debug object)
@@ -69,4 +71,3 @@
                         :event ~fn-name-string
                         :result (~result-fn result#)})
            result#)))))
- 

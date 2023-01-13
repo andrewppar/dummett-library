@@ -12,6 +12,11 @@
    [ring.middleware.defaults :as middleware]))
 
 (defn init!
+  "Initialize the the dummet library
+
+  There are two types of initialization:
+   the first type is for running the application. The second is for
+   indexing all of the documents specified in the catalog.edn."
   ([]
    (init! :run))
   ([init-type]
@@ -56,6 +61,7 @@
          (query/query searcher analyzer store query-string doc-types))))
 
 (defn health-check [_]
+  "Perform a health check on the dummett library"
   {:status 200
    :headers {"Content-Type" "text/json"
              "Access-Control-Allow-Origin" "*"
@@ -66,6 +72,8 @@
 
 
 (defn ^:private query-wrapper-internal
+  "Middle ware for running a query against the lucene indexes for the
+  library."
   [req]
   (let [query-string   (-> req (get :query-params) (get "query-string"))
         document-types (if-let [doc-types (-> req
@@ -77,6 +85,8 @@
     result))
 
 (defn query-wrapper
+  "Run a query against the libraries lucene indexes and return the
+  output as a json payload."
   [req]
   {:status 200
    :headers {"Content-Type"  "text/json"
@@ -93,7 +103,9 @@
   (compojure/POST "/query"        [] query-wrapper)
   (route/not-found "<h1>Page not found</h1>"))
 
-(defn run! [& args]
+(defn run!
+  "Run the application for search."
+  [& args]
   (let [port 5000]
     (init!)
     (server/run-server
@@ -105,4 +117,3 @@
       :access-control-allow-headers ["Origin" "X-Requested-With"
                                      "Content-Type" "Accept"])
      {:port port})))
-

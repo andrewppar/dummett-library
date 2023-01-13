@@ -13,6 +13,11 @@
   (Document.))
 
 (defn new-field ^Field
+  "Add a field to a luecene document.
+
+  The supported field types are positional fields, text fields,
+  and string fields. Text fields are analyzed by lucene's analyzer,
+  string fields are not."
   [field value field-type &
    {:keys [store?] :or {store? true}}]
   (let [field-store-value (if store? Field$Store/YES Field$Store/NO)]
@@ -39,4 +44,3 @@
     (.add document page-field)
     (.add document text-field)
     document))
-    

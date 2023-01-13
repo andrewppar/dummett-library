@@ -15,6 +15,8 @@
    ))
 
 (defn ^:private build-doc-types-clause
+  "Create a clause that matches the selected document types, e.g.
+  article, book, etc."
   [document-types]
   (let [builder (BooleanQuery$Builder.)]
     (reduce
@@ -38,6 +40,12 @@
     (.build builder)))
 
 (defn to-fragments
+  "For the original display of text, it's important to only show
+  keywords that match the highlighted text. Displaying a full matched
+  page at the outset is too much.
+
+  This function gives an overview of the text surrounding any matches
+  on a page."
   [doc doc-id highlighter analyzer store]
   (let [text   (.get doc "text")
         stream (TokenSources/getAnyTokenStream
@@ -91,7 +99,7 @@
                        doc doc-id highlighter analyzer store))))
 
 (defn score-search-results
-  "Rank search results"
+  "Rank search results according to their lucene score"
   [^TopDocs search-results
    ^IndexSearcher searcher
    ^StandardAnalyzer analyzer
@@ -115,7 +123,7 @@
         scorer        (QueryScorer. query)
         highlighter   (Highlighter. formatter scorer)
         ;; I hardcoded the fragmentation size - I messed with it some
-        ;; I don't think we'll really need to worry about changing it. 
+        ;; I don't think we'll really need to worry about changing it.
         fragmenter    (SimpleSpanFragmenter. scorer 10)]
     (.setTextFragmenter highlighter fragmenter)
     (-> searcher
@@ -123,6 +131,9 @@
         (score-search-results searcher analyzer highlighter store))))
 
 (defn ^:private all-items-internal
+  "Get all values of items from a particular store on a document.
+
+  This is used to see what document types are available."
   [store field]
   (let [reader  (DirectoryReader/open store)
         indexes (range (.numDocs reader))]

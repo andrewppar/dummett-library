@@ -1,5 +1,5 @@
 (ns dummett-library.index
-  (:require 
+  (:require
    [clojure.string           :as str]
    [dummett-library.document :as doc]
    [dummett-library.parse    :as parse]
@@ -41,10 +41,10 @@
   to the the libraries lucene index"
   [pdf-filepath index-writer author title document-type]
   (let [pages (-> pdf-filepath parse/pdf->xml-map parse/xml-map-pages)]
-    (reduce 
+    (reduce
      (fn [count page]
        (do
-         (->> (doc/new-page 
+         (->> (doc/new-page
                (str/trim author)
                (str/trim title)
                (str/trim document-type)
@@ -55,6 +55,7 @@
      1 pages)))
 
 (defn index-documents!
+  "Index all documents for a project."
   [root-path files index-writer fields regex default-doc-type]
   (mapv
    (fn [file]
@@ -65,7 +66,7 @@
            metadata-map (zipmap full-fields meta-values)
            author       (get metadata-map :author)
            title        (get metadata-map :title)
-           doc-type     (str/lower-case 
+           doc-type     (str/lower-case
                          (if-let [dt (get metadata-map :doc-type)]
                           dt
                           default-doc-type))
@@ -74,6 +75,10 @@
    files))
 
 (defn reindex!
+  "Reindex all the documents for the project.
+
+  This ensure that the proper lucene indexes are created so that they
+  can be used for search when the app runs in search mode."
   [catalog index-writer]
   (let [root (get catalog :root)]
     (mapv
