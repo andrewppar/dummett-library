@@ -1,6 +1,12 @@
 .cpcache/
 .nrepl-port
 .shadow-cljs/
+.clj-kondo/
+.lsp
+data
+datacatalog.csv
+doc_data.txt
+result
 opt/
 public/js/compiled/
 *~
