@@ -43,21 +43,25 @@
              }
            ] ;
          build-dependencies =  with pkgs ; [ openjdk clojure git ] ;
+         build-commands = builtins.concatStringsSep "\n"
+           [
+             ''export HOME="${deps-cache}"''
+             ''export JAVA_TOOL_OPTIONS="-Duser.home=${deps-cache}"''
+             ''clj -T:prod/build uber''
+           ] ;
+         install-commands = builtins.concatStringsSep "\n"
+           [
+             ''mkdir -p $out''
+             ''jarPath="$(find target -type f -name "*.jar" -print | head -n 1)"''
+             ''cp $jarPath $out''
+           ] ;
      in {
        packages.default = pkgs.stdenv.mkDerivation {
          name = "dummett-library";
          src = ./.;
          nativeBuildInputs = build-dependencies;
-         buildPhase = ''
-           export HOME="${deps-cache}"
-           export JAVA_TOOL_OPTIONS="-Duser.home=${deps-cache}"
-           clj -T:prod/build uber
-         '' ;
-         installPhase = ''
-           mkdir -p $out
-           jarPath="$(find target -type f -name "*.jar" -print | head -n 1)"
-           cp $jarPath $out
-         '';
+         buildPhase = build-commands ;
+         installPhase = install-commands ;
        } ;
        devShells.default =
          let
@@ -75,6 +79,8 @@
          in
            pkgs.mkShell {
              packages = build-dependencies ;
+             buildPhase = build-commands ;
+             installPhase = install-commands ;
              shellHook = fns + '' echo "go forth and search..."'';
            } ;
      }) ;

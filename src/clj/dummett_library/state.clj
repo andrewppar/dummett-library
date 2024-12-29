@@ -1,10 +1,9 @@
 (ns dummett-library.state
   (:require
-   [dummett-library.analyze :as analyze]
-   [dummett-library.index :as index]
-   [integrant.core :as ig])
-  (:import
-   (org.apache.lucene.search.highlight SimpleHTMLFormatter)))
+   [dummett-library.store.analyze :as analyze]
+   [dummett-library.store.index :as index]
+   [dummett-library.query.format :as format]
+   [integrant.core :as ig]))
 
 (defmethod ig/init-key ::hits-per-page [_ _] 20)
 
@@ -20,7 +19,7 @@
 
 (defmethod ig/init-key ::formatter
   [_ _]
-  (SimpleHTMLFormatter.))
+  (format/make))
 
 (defmethod ig/init-key ::writer
   [_ {:keys [analyzer index-location]}]
@@ -47,7 +46,7 @@
 (defn init! [init-type]
   (when-not (nil? @state)
     (ig/halt! @state))
-  (reset! state (ig/init config))))
+  (reset! state (ig/init config)))
 
 (defn halt! [& components]
   (if (seq components)
