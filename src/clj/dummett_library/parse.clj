@@ -1,6 +1,7 @@
 (ns dummett-library.parse
-  (:require [clojure.java.io :as io]
-            [clojure.xml     :as xml])
+  (:require
+   [clojure.java.io :as io]
+   [clojure.xml :as xml])
   (:import
    (org.apache.tika.parser.pdf PDFParser)
    (org.apache.tika.metadata Metadata)

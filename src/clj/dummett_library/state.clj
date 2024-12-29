@@ -1,14 +1,10 @@
 (ns dummett-library.state
   (:require
-   [aero.core                :as aero]
-   [dummett-library.analyze  :as analyze]
-   [dummett-library.index    :as index]
-   [integrant.core           :as ig])
-  (:import 
+   [dummett-library.analyze :as analyze]
+   [dummett-library.index :as index]
+   [integrant.core :as ig])
+  (:import
    (org.apache.lucene.search.highlight SimpleHTMLFormatter)))
-
-(defmethod ig/init-key ::catalog [_ _]
-  (aero/read-config "resources/catalog.edn"))
 
 (defmethod ig/init-key ::hits-per-page [_ _] 20)
 
@@ -38,29 +34,17 @@
 (defmethod ig/init-key ::searcher [_ {:keys [store]}]
   (index/new-index-searcher store))
 
-(def run-config
-  {::catalog []
-   ::hits-per-page []
+(def config
+  {::hits-per-page []
    ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
+   ::store {:index-location (ig/ref ::index-location)}
    ::analyzer []
    ::searcher {:store (ig/ref ::store)}
    ::formatter []})
 
-(def reindex-config
-  {::catalog []
-   ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
-   ::analyzer []
-   ::writer {:analyzer (ig/ref ::analyzer)
-             :index-location (ig/ref ::index-location)}})
-
 (def state (atom nil))
 
 (defn init! [init-type]
-  (let [config (case init-type
-                 :reindex reindex-config
-                 :run run-config)]
   (when-not (nil? @state)
     (ig/halt! @state))
   (reset! state (ig/init config))))
@@ -70,4 +54,3 @@
     (ig/halt! @state components)
     (ig/halt! @state))
   (reset! state nil))
-

@@ -1,6 +1,6 @@
-(ns dummett-library.query
+(ns dummett-library.query.query
   (:require
-   [clojure.string        :as str]
+   [clojure.string :as str]
    [dummett-library.state :as state])
   (:import
    (org.apache.lucene.analysis.standard StandardAnalyzer)
@@ -11,8 +11,7 @@
     BooleanQuery$Builder ScoreDoc TopDocs TermQuery)
    (org.apache.lucene.search.highlight
     Highlighter QueryScorer SimpleSpanFragmenter TokenSources)
-   (org.apache.lucene.store NIOFSDirectory)
-   ))
+   (org.apache.lucene.store NIOFSDirectory)))
 
 (defn ^:private build-doc-types-clause
   [document-types]
@@ -37,7 +36,7 @@
         (.add builder doc-types-clause BooleanClause$Occur/MUST)))
     (.build builder)))
 
-(defn to-fragments
+(defn ^:private ->fragments
   [doc doc-id highlighter analyzer store]
   (let [text   (.get doc "text")
         stream (TokenSources/getAnyTokenStream
@@ -48,7 +47,7 @@
        (format "...%s..." (str/replace (str fragment) #"\n" "</br>")))
      frags)))
 
-(defn to-document
+(defn ^:private ->document
   "Convert a Lucene ScoreDoc object
   to a map"
   [^IndexSearcher searcher
@@ -64,7 +63,7 @@
         ;; and whose values are vectors
         ;; of the values associated with that key.
         as-map (reduce (fn [acc
-                            ^org.apache.lucene.document.Field field]
+                           ^org.apache.lucene.document.Field field]
                          (let [field-key  (keyword (.name field))
                                new-value  (if-let [number (.numericValue field)]
                                             number
@@ -81,13 +80,13 @@
     ;; Maybe we need to track labels we expect
     ;; to have multiple values...
     (assoc (reduce-kv (fn [result key value]
-                 (if (and (vector? value)
-                          (= (count (set value)) 1))
+                        (if (and (vector? value)
+                                 (= (count (set value)) 1))
 
-                   (assoc result key (first value))
-                   (assoc result key value)))
+                          (assoc result key (first value))
+                          (assoc result key value)))
                       {} as-map)
-           :fragments (to-fragments
+           :fragments (->fragments
                        doc doc-id highlighter analyzer store))))
 
 (defn score-search-results
@@ -97,26 +96,23 @@
    ^StandardAnalyzer analyzer
    ^Highlighter highlighter
    ^NIOFSDirectory store]
-  (let [hits      (.scoreDocs search-results)
-        hit-idxs  (->> hits count range)]
-    (reduce (fn [acc doc-idx]
-              (->> doc-idx
-                   (nth hits)
-                   (to-document searcher analyzer highlighter store)
-                   (conj acc)))
-            [] hit-idxs)))
+  (map
+   (fn [doc-idx]
+     (let [score-doc (nth (.scoreDocs search-results) doc-idx)]
+       (->document searcher analyzer highlighter store score-doc)))
+   (range (count (.scoreDocs search-results)))))
 
 (defn query
   "Run a query against the index."
   [searcher analyzer store query-string document-type]
-  (let [query         (new-query analyzer query-string document-type)
+  (let [query (new-query analyzer query-string document-type)
         hits-per-page (get @state/state ::state/hits-per-page)
-        formatter     (get @state/state ::state/formatter)
-        scorer        (QueryScorer. query)
-        highlighter   (Highlighter. formatter scorer)
+        formatter (get @state/state ::state/formatter)
+        scorer (QueryScorer. query)
+        highlighter (Highlighter. formatter scorer)
         ;; I hardcoded the fragmentation size - I messed with it some
-        ;; I don't think we'll really need to worry about changing it. 
-        fragmenter    (SimpleSpanFragmenter. scorer 10)]
+        ;; I don't think we'll really need to worry about changing it.
+        fragmenter (SimpleSpanFragmenter. scorer 10)]
     (.setTextFragmenter highlighter fragmenter)
     (-> searcher
         (.search query hits-per-page)

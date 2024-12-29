@@ -1,18 +1,29 @@
 {:paths ["src/clj"]
  :deps
- {compojure/compojure                  {:mvn/version "1.6.1"}
+ {aero/aero                            {:mvn/version "1.1.6"}
+  compojure/compojure                  {:mvn/version "1.6.1"}
   cheshire/cheshire                    {:mvn/version "5.11.0"}
+  com.taoensso/timbre                  {:mvn/version "5.2.1"}
   http-kit/http-kit                    {:mvn/version "2.3.0"}
+  integrant/integrant                  {:mvn/version "0.8.0"}
+  lambdaisland/regal                   {:mvn/version "0.0.143"}
+  org.clojure/tools.logging            {:mvn/version "1.2.4"}
   org.clojure/clojure                  {:mvn/version "1.12.0"}
   org.apache.lucene/lucene-core        {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-highlighter {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-queries     {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-queryparser {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-suggest     {:mvn/version "9.2.0"}
+  ring-cors/ring-cors                  {:mvn/version "0.1.13"}
+  ring/ring-defaults                   {:mvn/version "0.3.2"}
   org.apache.tika/tika-parsers         {:mvn/version "1.2"}}
  :aliases
  {:prod/run
-  {:exec-fn dummett-library.core/run!}
+  {:exec-fn dummett-library.core/start}
+  :prod/build
+  {:extra-deps
+   {io.github.clojure/tools.build {:mvn/version "0.10.6"}}
+   :ns-default build}
   :dev/repl
   {:extra-deps
    {nrepl/nrepl       {:mvn/version "0.9.0"}

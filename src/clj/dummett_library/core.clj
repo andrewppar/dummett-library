@@ -1,40 +1,24 @@
 (ns dummett-library.core
   (:require
-   [clojure.data.json        :as json]
-   [compojure.core           :as compojure]
-   [compojure.route          :as route]
-   [dummett-library.index    :as index]
-   [dummett-library.log      :as log :refer [defn-logged]]
-   [dummett-library.query    :as query]
-   [dummett-library.state    :as state]
-   [org.httpkit.server       :as server]
-   [ring.middleware.cors     :as cors]
-   [ring.middleware.defaults :as middleware]
-   ))
+   [cheshire.core :as json]
+   [compojure.core :as compojure]
+   [compojure.route :as route]
+   [dummett-library.log :as log :refer [defn-logged]]
+   [dummett-library.query.query :as query]
+   [dummett-library.state :as state]
+   [org.httpkit.server :as server]
+   [ring.middleware.cors :as cors]
+   [ring.middleware.defaults :as middleware])
+  (:gen-class))
 
 (defn init!
   ([]
    (init! :run))
   ([init-type]
-   (do
-     (log/init :info)
-     (log/log
-      :info {:event "initialization"
-             :status "starting"})
-     (state/init! init-type)
-     (log/log
-      :info {:event "initialization"
-             :status "done"}))))
-
-(defn reindex!
-  "Rebuild the library's lucene index from the catalog"
-  [& _]
-  (init! :reindex)
-  (let [catalog (get @state/state ::state/catalog)
-        writer  (get @state/state ::state/writer)]
-    (index/reindex! catalog writer)
-    (.commit writer)
-    (.close writer)))
+   (log/init :info)
+   (log/info {:event "initialization" :status "starting"})
+   (state/init! init-type)
+   (log/info {:event "initialization" :status "done"})))
 
 (defn-logged query
   "The primary interface for getting documents.
@@ -62,20 +46,14 @@
              "Access-Control-Allow-Origin" "*"
              "Access-Control-Allow-Headers" "x-requested-with"
              "Access-Control-Allow-Methods" "*"}
-
-   :body (json/write-str {:status "OK"})})
+   :body (json/generate-string {:status "OK"})})
 
 
 (defn ^:private query-wrapper-internal
   [req]
-  (let [query-string   (-> req (get :query-params) (get "query-string"))
-        document-types (if-let [doc-types (-> req
-                                              (get :query-params)
-                                              (get "document-types"))]
-                         doc-types
-                         [])
-        result (query query-string :document-types document-types)]
-    result))
+  (let [query-string (get-in req [:query-params "query-string"])
+        document-types (get-in req [:query-params "document-types"] [])]
+    (query query-string :document-types document-types)))
 
 (defn query-wrapper
   [req]
@@ -84,9 +62,8 @@
              "Access-Control-Allow-Credentials" "true"
              "Access-Control-Allow-Origin" "*"
              "Access-Control-Allow-Headers" "x-requested-with"
-             "Access-Control-Allow-Methods" "*"
-             }
-   :body (json/write-str (query-wrapper-internal req))})
+             "Access-Control-Allow-Methods" "*"}
+   :body (json/generate-string (query-wrapper-internal req))})
 
 (compojure/defroutes app
   (compojure/GET "/" req (str req))
@@ -94,7 +71,7 @@
   (compojure/POST "/query"        [] query-wrapper)
   (route/not-found "<h1>Page not found</h1>"))
 
-(defn run! [& args]
+(defn start [& args]
   (let [port 4000]
     (init!)
     (server/run-server
@@ -106,4 +83,3 @@
       :access-control-allow-headers ["Origin" "X-Requested-With"
                                      "Content-Type" "Accept"])
      {:port port})))
-
