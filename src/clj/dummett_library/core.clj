@@ -6,6 +6,7 @@
    [dummett-library.log :as log :refer [defn-logged]]
    [dummett-library.query.query :as query]
    [dummett-library.state :as state]
+   [dummett-library.store.index :as index]
    [org.httpkit.server :as server]
    [ring.middleware.cors :as cors]
    [ring.middleware.defaults :as middleware])
@@ -31,9 +32,9 @@
    `(all-document-types)`."
   {:log-level :info :result-fn count}
   [query-string & {:keys [document-types] :or {document-types []}}]
-  (let [searcher  (get @state/state ::state/searcher)
-        analyzer  (get @state/state ::state/analyzer)
-        store     (get @state/state ::state/store)
+  (let [analyzer (get @state/state ::state/analyzer)
+        store (get @state/state ::state/store)
+        searcher (index/new-index-searcher store)
         doc-types (if (seq document-types)
                     document-types
                     (query/all-items store "type"))]
@@ -53,22 +54,24 @@
   [req]
   (let [query-string (get-in req [:query-params "query-string"])
         document-types (get-in req [:query-params "document-types"] [])]
-    (query query-string :document-types document-types)))
+    {:status 200
+     :body (-> query-string
+               (query :document-types document-types)
+               json/generate-string)}))
 
 (defn query-wrapper
   [req]
-  {:status 200
-   :headers {"Content-Type"  "text/json"
-             "Access-Control-Allow-Credentials" "true"
-             "Access-Control-Allow-Origin" "*"
-             "Access-Control-Allow-Headers" "x-requested-with"
-             "Access-Control-Allow-Methods" "*"}
-   :body (json/generate-string (query-wrapper-internal req))})
+  (merge {:headers {"Content-Type" "application/json"}}
+         (try (query-wrapper-internal req)
+              (catch Exception e
+                {:status 500
+                 :body (json/generate-string
+                        {:error "Cannot process query."})}))))
 
 (compojure/defroutes app
   (compojure/GET "/" req (str req))
   (compojure/GET "/health-check" [] health-check)
-  (compojure/POST "/query"        [] query-wrapper)
+  (compojure/GET "/query"        [] query-wrapper)
   (route/not-found "<h1>Page not found</h1>"))
 
 (defn start [& args]
@@ -83,3 +86,8 @@
       :access-control-allow-headers ["Origin" "X-Requested-With"
                                      "Content-Type" "Accept"])
      {:port port})))
+
+
+(comment
+  (start)
+  )

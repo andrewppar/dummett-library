@@ -43,13 +43,8 @@
              }
            ] ;
          build-dependencies =  with pkgs ; [ openjdk clojure git ] ;
-         build-commands = builtins.concatStringsSep "\n"
-           [
-             ''export HOME="${deps-cache}"''
-             ''export JAVA_TOOL_OPTIONS="-Duser.home=${deps-cache}"''
-             ''clj -T:prod/build uber''
-           ] ;
-         install-commands = builtins.concatStringsSep "\n"
+         build-commands = [''clj -T:prod/build uber''] ;
+         install-commands =
            [
              ''mkdir -p $out''
              ''jarPath="$(find target -type f -name "*.jar" -print | head -n 1)"''
@@ -60,8 +55,15 @@
          name = "dummett-library";
          src = ./.;
          nativeBuildInputs = build-dependencies;
-         buildPhase = build-commands ;
-         installPhase = install-commands ;
+         buildPhase = builtins.concatStringsSep "\n"
+           (
+             [
+               ''export HOME="${deps-cache}"''
+               ''export JAVA_TOOL_OPTIONS="-Duser.home=${deps-cache}"''
+             ]
+             ++ build-commands
+           ) ;
+         installPhase = builtins.concatStringsSep "\n" install-commands ;
        } ;
        devShells.default =
          let
@@ -73,14 +75,26 @@
              (shell-fn {
                name = "deps-lock" ;
                commands =
-                 ["nix run github:jlesquembre/clj-nix#deps-lock"];
-             })
+                 ["nix run github:jlesquembre/clj-nix#deps-lock"];})
+             (shell-fn {name = "build"; commands = build-commands;})
+             (shell-fn {
+               name = "dev" ;
+               commands = [''clojure -M:dev/repl &'' ''echo $! > pids.txt''] ;})
+             (shell-fn {name = "install" ; commands = install-commands ;})
+             (shell-fn {
+               name = "quit" ;
+               commands = [
+                 ''for PID in $(cat pids.txt); do ''
+                 ''  kill $PID''
+                 ''done''
+               ];})
+             (shell-fn {name = "run" ; commands = ["build" "install" "java --version"];})
            ] ;
          in
            pkgs.mkShell {
+             DATA_DIR="/Users/andrew/Dropbox/Dummett writings" ;
+             INDEX_LOCATION="/opt/dummett";
              packages = build-dependencies ;
-             buildPhase = build-commands ;
-             installPhase = install-commands ;
              shellHook = fns + '' echo "go forth and search..."'';
            } ;
      }) ;

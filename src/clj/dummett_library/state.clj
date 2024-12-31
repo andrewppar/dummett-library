@@ -30,15 +30,11 @@
     (.commit writer))
   (.close  writer))
 
-(defmethod ig/init-key ::searcher [_ {:keys [store]}]
-  (index/new-index-searcher store))
-
 (def config
   {::hits-per-page []
    ::index-location []
    ::store {:index-location (ig/ref ::index-location)}
    ::analyzer []
-   ::searcher {:store (ig/ref ::store)}
    ::formatter []})
 
 (def state (atom nil))
