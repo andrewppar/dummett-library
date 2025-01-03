@@ -108,7 +108,6 @@
    :body  (json/generate-string (add-internal req))})
 
 (compojure/defroutes app
-  (compojure/GET "/" req (str req))
   (compojure/GET "/health-check" [] health-check)
   (compojure/GET "/query" req (query-wrapper req))
   (compojure/POST "/document/add" req (add req))

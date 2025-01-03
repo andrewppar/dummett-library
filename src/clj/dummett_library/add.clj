@@ -16,7 +16,9 @@
   `author`, `title`, and `document-type` must also be specified."
   [{:keys [path author title document-type]}]
   (let [pages (-> path parse/pdf->xml-map parse/xml-map-pages)]
-    (store/add-document! pages author title document-type)))
+    {:title title
+     :author author
+     :pages-added (store/add-document! pages author title document-type)}))
 
 (defn all!
   "Add documents from document specifications."
