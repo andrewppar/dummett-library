@@ -53,7 +53,7 @@
          pname = "dummett-library" ;
          pversion = "0.1.1";
      in {
-       packages.default = pkgs.stdenv.mkDerivation {
+       packages.backend = pkgs.stdenv.mkDerivation {
          name = pname;
          version = pversion;
          src = ./.;
