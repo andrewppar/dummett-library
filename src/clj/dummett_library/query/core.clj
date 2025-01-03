@@ -35,10 +35,14 @@
 
 (defn query
   [searcher analyzer store document-types query-string
-   & {:keys [hits-per-page]}]
-  (let [hit-count (or hits-per-page (hits-per-page))
+   & {:keys [limit]}]
+  (let [hit-count (or limit (hits-per-page))
         formatter (formatter)]
     (if (and hit-count formatter)
       (query/query
        searcher analyzer store formatter hit-count document-types query-string)
       (throw (ex-info "Query State not initialized" {})))))
+
+(comment
+  @state
+  )

@@ -1,7 +1,7 @@
 (ns build
   (:require [clojure.tools.build.api :as b]))
 
-(def lib 'dummet-library)
+(def lib 'dummett-library)
 (def version "0.1.1")
 (def class-dir "target/classes")
 (def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
@@ -22,4 +22,4 @@
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis @basis
-           :main 'dummet-library}))
+           :main 'dummett-library}))

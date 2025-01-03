@@ -42,7 +42,7 @@
                path = dotclojure ;
              }
            ] ;
-         build-dependencies =  with pkgs ; [ openjdk clojure git ] ;
+         build-dependencies =  with pkgs ; [ openjdk clojure git makeWrapper] ;
          build-commands = [''clj -T:prod/build uber''] ;
          install-commands =
            [
@@ -50,9 +50,12 @@
              ''jarPath="$(find target -type f -name "*.jar" -print | head -n 1)"''
              ''cp $jarPath $out''
            ] ;
+         pname = "dummett-library" ;
+         pversion = "0.1.1";
      in {
        packages.default = pkgs.stdenv.mkDerivation {
-         name = "dummett-library";
+         name = pname;
+         version = pversion;
          src = ./.;
          nativeBuildInputs = build-dependencies;
          buildPhase = builtins.concatStringsSep "\n"
@@ -63,7 +66,13 @@
              ]
              ++ build-commands
            ) ;
-         installPhase = builtins.concatStringsSep "\n" install-commands ;
+         installPhase = builtins.concatStringsSep "\n"
+           (install-commands
+            ++
+            [
+              ''makeWrapper ${pkgs.openjdk}/bin/java $out/bin/dummett_library --add-flags "-cp $out/${pname}-${pversion}-standalone.jar" --add-flags dummett_library.core''
+            ])
+         ;
        } ;
        devShells.default =
          let
@@ -73,14 +82,49 @@
              + "}\n" ;
            fns = builtins.concatStringsSep "\n" [
              (shell-fn {
+               name = "clean" ;
+               commands = [
+                 ''echo "cleaning repo..."''
+                 ''rm -rf result''
+                 ''rm -rf outputs''
+                 ''rm -rf target''
+               ];
+             })
+             (shell-fn {
                name = "deps-lock" ;
                commands =
                  ["nix run github:jlesquembre/clj-nix#deps-lock"];})
-             (shell-fn {name = "build"; commands = build-commands;})
+             (shell-fn {
+               name = "build";
+               commands =
+                 [''echo "building..."''] ++ build-commands;
+             })
              (shell-fn {
                name = "dev" ;
                commands = [''clojure -M:dev/repl &'' ''echo $! > pids.txt''] ;})
-             (shell-fn {name = "install" ; commands = install-commands ;})
+             (shell-fn {
+               name = "install" ;
+               commands = [''echo "installing..."''] ++ install-commands ;
+             })
+             (shell-fn {
+               name = "prod" ;
+               commands = [
+                 ''RUN_TYPE=$1''
+                 ''if [[ -z $RUN_TYPE ]] ; then''
+                 ''  echo "Running clojure..."''
+                 ''  clj -X:prod/run''
+                 ''elif [[ $RUN_TYPE = "clj" ]] ; then''
+                 ''  echo "Running clojure..."''
+                 ''  clj -X:prod/run''
+                 ''else''
+                 ''  echo "Running as jar file..."''
+                 ''  clean''
+                 ''  build''
+                 ''  install''
+                 ''  java -cp outputs/out/${pname}-${pversion}-standalone.jar dummett_library.core''
+                 ''fi''
+               ];
+             })
              (shell-fn {
                name = "quit" ;
                commands = [

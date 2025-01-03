@@ -36,7 +36,7 @@
    ::analyzer []
    ::store {:index-location (ig/ref ::index-location)}
    ::writer {:analyzer (ig/ref ::analyzer)
-             :index-location (ig/ref ::analyzer)}})
+             :index-location (ig/ref ::index-location)}})
 
 (def state (atom nil))
 
@@ -93,6 +93,11 @@
   @state
   (init!)
   (halt!)
+
+  (store)
+
+  (.getDirectory (writer))
+  (.getConfig (writer))
 
   (writer/live-commits (get @state ::writer))
 

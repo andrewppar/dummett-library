@@ -138,9 +138,9 @@
   (store/halt!)
   (query/halt!))
 
-
+(defn -main [& args]
+  (start!))
 
 (comment
-  (start!)
-
+  (-main)
   )

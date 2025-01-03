@@ -8,7 +8,7 @@
   "Create a new index writer from `analyzer`. Takes an `index-location`
   as a keyword arg which defaults to `/opt/dummett`."
   [analyzer & {:keys [index-location] :or {index-location "/opt/dummett"}}]
-  (let [index  (store/make :location index-location)
+  (let [index  (store/make :index-location index-location)
         config (IndexWriterConfig. analyzer)]
     (IndexWriter. index config)))
 
