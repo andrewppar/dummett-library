@@ -12,10 +12,10 @@
   "Given the `filepath` of a pdf document generates a map representing
   an xml parse of that the pdf at `filepath`"
   [filepath]
-  (let [parser        (PDFParser.)
-        stream        (io/input-stream filepath)
-        handler       (ToXMLContentHandler.)
-        metadata      (Metadata.)
+  (let [parser (PDFParser.)
+        stream (io/input-stream filepath)
+        handler (ToXMLContentHandler.)
+        metadata (Metadata.)
         parse-context (ParseContext.)]
     (.parse parser stream handler metadata parse-context)
     (-> handler

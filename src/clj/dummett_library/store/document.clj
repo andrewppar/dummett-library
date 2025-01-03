@@ -2,7 +2,7 @@
   (:import (org.apache.lucene.document
             Document Field TextField StringField Field$Store)))
 
-(defn new-document ^Document
+(defn ^:private make ^Document
   []
   (Document.))
 
@@ -16,7 +16,7 @@
       :string
       (StringField. field value field-store-value))))
 
-(defn new-page
+(defn page
   "Create a new document with author, title, page, and text fields"
   [author title doc-type page text]
   (let [author-field (new-field "author" author :text)
@@ -24,7 +24,7 @@
         doc-type-field (new-field "type" doc-type :string)
         page-field (new-field "page" page :string)
         text-field (new-field "text" text :text)
-        document (new-document)]
+        document (make)]
     (.add document author-field)
     (.add document title-field)
     (.add document doc-type-field)

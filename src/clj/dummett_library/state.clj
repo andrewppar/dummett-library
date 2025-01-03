@@ -34,6 +34,8 @@
   {::hits-per-page []
    ::index-location []
    ::store {:index-location (ig/ref ::index-location)}
+   ::writer {:analyzer (ig/ref ::analyzer)
+             :index-location (ig/ref ::index-location)}
    ::analyzer []
    ::formatter []})
 
@@ -49,3 +51,18 @@
     (ig/halt! @state components)
     (ig/halt! @state))
   (reset! state nil))
+
+(defn index-writer []
+  (get @state ::writer))
+
+(defn analyzer []
+  (get @state ::analyzer))
+
+(defn store []
+  (get @state ::store))
+
+
+(comment
+  (index-writer)
+
+  )

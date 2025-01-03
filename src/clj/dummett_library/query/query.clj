@@ -1,7 +1,6 @@
 (ns dummett-library.query.query
   (:require
-   [clojure.string :as str]
-   [dummett-library.state :as state])
+   [clojure.string :as str])
   (:import
    (org.apache.lucene.analysis.standard StandardAnalyzer)
    (org.apache.lucene.index Term DirectoryReader)
@@ -104,10 +103,8 @@
 
 (defn query
   "Run a query against the index."
-  [searcher analyzer store query-string document-type]
-  (let [query (new-query analyzer query-string document-type)
-        hits-per-page (get @state/state ::state/hits-per-page)
-        formatter (get @state/state ::state/formatter)
+  [searcher analyzer store formatter hits-per-page document-types query-string]
+  (let [query (new-query analyzer query-string document-types)
         scorer (QueryScorer. query)
         highlighter (Highlighter. formatter scorer)
         ;; I hardcoded the fragmentation size - I messed with it some
@@ -118,7 +115,7 @@
         (.search query hits-per-page)
         (score-search-results searcher analyzer highlighter store))))
 
-(defn ^:private all-items-internal
+(defn all-items
   [store field]
   (let [reader  (DirectoryReader/open store)
         indexes (range (.numDocs reader))]
@@ -127,5 +124,3 @@
           (fn [idx]
             (-> reader (.document idx) (.get field))))
          distinct)))
-
-(def all-items (memoize all-items-internal))

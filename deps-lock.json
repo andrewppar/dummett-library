@@ -3,16 +3,6 @@
   "git-deps": [],
   "mvn-deps": [
     {
-      "mvn-path": "aero/aero/1.1.6/aero-1.1.6.jar",
-      "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-9LCpJy2lDICRxVKcn+NVxHI08e65X+kiluLCP3h/PSI="
-    },
-    {
-      "mvn-path": "aero/aero/1.1.6/aero-1.1.6.pom",
-      "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-WUXPjq14D3SX6G8piWPyeGgdUZrpshvpSfrFQg8F01A="
-    },
-    {
       "mvn-path": "aopalliance/aopalliance/1.0/aopalliance-1.0.jar",
       "mvn-repo": "https://repo1.maven.org/maven2/",
       "hash": "sha256-Ct3sZw/tzT8RPFyAkdeDKA0j9146y4QbYanNsHk3agg="
@@ -398,14 +388,14 @@
       "hash": "sha256-Abw9VkmoG6vyyVkVtWbFQxNyqG/LwViDrBoT9JCEIxw="
     },
     {
-      "mvn-path": "integrant/integrant/0.8.0/integrant-0.8.0.jar",
+      "mvn-path": "integrant/integrant/0.13.1/integrant-0.13.1.jar",
       "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-SBsJooGzHQr0SbGdngkDYe4p8qDdWdLoIUXz23GRFh0="
+      "hash": "sha256-gGmruaTfKyXgktOc42TYsQRGfBpushbwa3+m/l5m0SU="
     },
     {
-      "mvn-path": "integrant/integrant/0.8.0/integrant-0.8.0.pom",
+      "mvn-path": "integrant/integrant/0.13.1/integrant-0.13.1.pom",
       "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-LxralOe3oYhuxvIOYHYEEyXeNol9bBaOc+uWwAmRzIg="
+      "hash": "sha256-ugILWPkpxKwPX+mltMTrOprQgOLked4fWFFGA3RwVpg="
     },
     {
       "mvn-path": "io/aviso/pretty/1.1.1/pretty-1.1.1.jar",
@@ -476,16 +466,6 @@
       "mvn-path": "joda-time/joda-time/2.8.2/joda-time-2.8.2.pom",
       "mvn-repo": "https://repo1.maven.org/maven2/",
       "hash": "sha256-gc2Q2jY8esODIFX4GrbMbE2TA4BsS//InGiFaqGg6x0="
-    },
-    {
-      "mvn-path": "lambdaisland/regal/0.0.143/regal-0.0.143.jar",
-      "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-DUm13UDnH2TrVDeJNouy20LKFsxPahPhuNVbPzk+KhQ="
-    },
-    {
-      "mvn-path": "lambdaisland/regal/0.0.143/regal-0.0.143.pom",
-      "mvn-repo": "https://repo.clojars.org/",
-      "hash": "sha256-NWy/v4of6B7LSRhk5BdfCDDjpcIh49n3eRvT8Im40dA="
     },
     {
       "mvn-path": "medley/medley/1.0.0/medley-1.0.0.jar",

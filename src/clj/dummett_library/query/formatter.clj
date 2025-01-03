@@ -1,4 +1,4 @@
-(ns dummett-library.query.format
+(ns dummett-library.query.formatter
   (:import
    (org.apache.lucene.search.highlight SimpleHTMLFormatter)))
 

@@ -1,6 +1,6 @@
-(ns dummett-library.store.analyze
+(ns dummett-library.store.analyzer
   (:import
    (org.apache.lucene.analysis.standard StandardAnalyzer)))
 
-(defn new-analyzer []
+(defn make []
   (StandardAnalyzer.))
