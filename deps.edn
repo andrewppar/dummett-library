@@ -1,8 +1,8 @@
 {:paths ["src/clj"]
  :deps
- {compojure/compojure {:mvn/version "1.6.1"}
-  cheshire/cheshire {:mvn/version "5.11.0"}
+ {cheshire/cheshire {:mvn/version "5.11.0"}
   com.taoensso/timbre {:mvn/version "5.2.1"}
+  compojure/compojure {:mvn/version "1.6.1"}
   http-kit/http-kit {:mvn/version "2.3.0"}
   integrant/integrant {:mvn/version "0.13.1"}
   org.clojure/clojure {:mvn/version "1.12.0"}
@@ -11,9 +11,17 @@
   org.apache.lucene/lucene-queries {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-queryparser {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-suggest {:mvn/version "9.2.0"}
+  org.apache.tika/tika-parsers {:mvn/version "1.2"}
   ring-cors/ring-cors {:mvn/version "0.1.13"}
   ring/ring-defaults {:mvn/version "0.3.2"}
-  org.apache.tika/tika-parsers {:mvn/version "1.2"}}
+  ;; this makes all the nix stuff way easier - it doesn't really belong
+  ;; here though since this is backend (but also the only deps.edn for everything)
+  thheller/shadow-cljs {:mvn/version "2.28.20"}
+  binaryage/devtools {:mvn/version "0.9.7"}
+  cljs-ajax/cljs-ajax {:mvn/version "0.7.5"}
+  day8.re-frame/http-fx {:mvn/version "0.2.4"}
+  reagent/reagent {:mvn/version "1.1.0"}
+  re-frame/re-frame {:mvn/version "0.10.7"}}
  :aliases
  {:prod/run
   {:exec-fn dummett-library.core/-main}

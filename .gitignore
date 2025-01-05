@@ -6,7 +6,6 @@
 node_modules/
 opt/
 outputs/
-package-lock.json
 pids.txt
 public/js/compiled/
 result

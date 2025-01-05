@@ -1,17 +1,18 @@
 {
-  "scripts": {
-    "deps": "yarn install",
-    "watch": "shadow-cljs watch app;",
-    "release": "shadow-cljs release app;",
-    "server": "shadow-cljs server;",
-    "clean": "rm -rf target; rm -rf public/js/compiled"
-  },
-  "dependencies": {
-    "create-react-class": "^15.6.2",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0"
-  },
-  "devDependencies": {
-    "shadow-cljs": "^2.20.2"
-  }
+    "scripts": {
+        "deps": "npm install",
+        "watch": "shadow-cljs watch app;",
+        "release": "shadow-cljs release app;",
+        "server": "shadow-cljs server;",
+        "clean": "rm -rf target; rm -rf public/js/compiled"
+    },
+    "dependencies": {
+        "create-react-class": "^15.6.2",
+        "react": "^16.0.0",
+        "react-dom": "^16.0.0",
+        "serve": "^14.2.4"
+    },
+    "devDependencies": {
+        "shadow-cljs": "^2.28.20"
+    }
 }

@@ -6,6 +6,7 @@
  outputs = {self, nixpkgs, flake-utils, ... }:
    flake-utils.lib.eachDefaultSystem (system:
      let pkgs = import nixpkgs { inherit system; };
+         # backend
          lock = builtins.fromJSON (builtins.readFile ./deps-lock.json) ;
          to-url = segments:
            pkgs.lib.pipe
@@ -42,14 +43,42 @@
                path = dotclojure ;
              }
            ] ;
-         build-dependencies =  with pkgs ; [ openjdk clojure git makeWrapper] ;
-         build-commands = [''clj -T:prod/build uber''] ;
-         install-commands =
+         backend-build-dependencies =  with pkgs ; [ openjdk clojure git makeWrapper] ;
+         backend-build-commands = [''clj -T:prod/build uber''] ;
+         backend-install-commands =
            [
              ''mkdir -p $out''
              ''jarPath="$(find target -type f -name "*.jar" -print | head -n 1)"''
              ''cp $jarPath $out''
            ] ;
+         # frontend
+         # frontend also uses clojure
+         frontend-build-dependencies = [pkgs.nodejs] ++ backend-build-dependencies ;
+         node-lock = builtins.fromJSON (builtins.readFile ./package-lock.json) ;
+         dotnpm = pkgs.runCommand "dotnpm" { }
+           '' mkdir -p $out/ok'';
+         node-cache = pkgs.linkFarm "frontend-cache"
+           [
+             {
+               name = ".m2/repository" ;
+               path = mvn-cache ;
+             }
+             { name = ".clojure" ;
+               path = dotclojure ;
+             }
+            {
+              name = ".npm" ;
+              path = dotnpm ;
+            }
+           ] ;
+         node-deps = builtins.attrValues (removeAttrs node-lock.packages [""]) ;
+         node-tarballs = map
+           (p: pkgs.fetchurl { url = p.resolved; hash = p.integrity; })
+           node-deps;
+         node-tarballs-file = pkgs.writeTextFile {
+           name = "tarballs";
+           text = builtins.concatStringsSep "\n" node-tarballs;
+         };
          pname = "dummett-library" ;
          pversion = "0.1.1";
      in {
@@ -57,22 +86,52 @@
          name = pname;
          version = pversion;
          src = ./.;
-         nativeBuildInputs = build-dependencies;
+         nativeBuildInputs = backend-build-dependencies;
          buildPhase = builtins.concatStringsSep "\n"
            (
              [
                ''export HOME="${deps-cache}"''
                ''export JAVA_TOOL_OPTIONS="-Duser.home=${deps-cache}"''
              ]
-             ++ build-commands
+             ++ backend-build-commands
            ) ;
          installPhase = builtins.concatStringsSep "\n"
-           (install-commands
+           (backend-install-commands
             ++
             [
-              ''makeWrapper ${pkgs.openjdk}/bin/java $out/bin/dummett_library --add-flags "-cp $out/${pname}-${pversion}-standalone.jar" --add-flags dummett_library.core''
+              ''makeWrapper ${pkgs.openjdk}/bin/java $out/bin/dummett_library_backend --add-flags "-cp $out/${pname}-${pversion}-standalone.jar" --add-flags dummett_library.core''
             ])
          ;
+       } ;
+       packages.frontend = pkgs.stdenv.mkDerivation {
+         name = pname ;
+         version = pversion ;
+         src = ./. ;
+         nativeBuildInputs = frontend-build-dependencies;
+         buildPhase = builtins.concatStringsSep "\n"
+           [
+             ''export HOME=$PWD/.home''
+             ''export JAVA_TOOL_OPTIONS="-Duser.home=$HOME"''
+             ''export npm_config_cache=$PWD/.npm''
+             #''cp -r ${node-cache} $HOME''
+             ''npm config set strict-ssl=false''
+
+             ''while read package''
+             ''do''
+             ''  echo "caching $package"''
+             ''  npm cache add "$package"''
+             '' done <${node-tarballs-file}''
+             ''npm ci''
+             ''npx shadow-cljs release app''
+           ] ;
+         installPhase = builtins.concatStringsSep "\n"
+           [
+             ''mkdir -p $out/public''
+#             ''mkdir -p $out/node_modules''
+             ''cp -r public $out/.''
+#             ''cp -r node_modules $out/.''
+             ''makeWrapper ${pkgs.nodejs}/bin/npx $out/bin/dummett_library_frontend --add-flags serve --add-flags "$out/public"''
+           ] ;
        } ;
        devShells.default =
          let
@@ -97,14 +156,14 @@
              (shell-fn {
                name = "build";
                commands =
-                 [''echo "building..."''] ++ build-commands;
+                 [''echo "building..."''] ++ backend-build-commands;
              })
              (shell-fn {
                name = "dev" ;
                commands = [''clojure -M:dev/repl &'' ''echo $! > pids.txt''] ;})
              (shell-fn {
                name = "install" ;
-               commands = [''echo "installing..."''] ++ install-commands ;
+               commands = [''echo "installing..."''] ++ backend-install-commands ;
              })
              (shell-fn {
                name = "prod" ;
@@ -138,7 +197,7 @@
            pkgs.mkShell {
              DATA_DIR="/Users/andrew/Dropbox/Dummett writings" ;
              INDEX_LOCATION="/opt/dummett";
-             packages = build-dependencies ;
+             packages = frontend-build-dependencies ;
              shellHook = fns + '' echo "go forth and search..."'';
            } ;
      }) ;
