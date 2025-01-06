@@ -14,7 +14,7 @@
      {:http-xhrio {:uri (str
                          "http://" "localhost:4000"
                          "/query?query-string=" encoded-search)
-                   :method :post
+                   :method :get
                    :format (ajax/transit-request-format)
                    :response-format (ajax/json-response-format
                                      {:keywords? true})
@@ -69,7 +69,7 @@
  ::set-foocal-result-event
  (fn [db  [_ focal-result]]
    (assoc db :focal-result focal-result)))
- 
+
 (rf/reg-event-db
  ::initialize-db
  (fn [_ _]
