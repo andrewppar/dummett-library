@@ -13,3 +13,4 @@ src/clj/dummett_library/.clj-kondo/
 src/clj/dummett_library/.lsp/
 target
 scratch
+.direnv
