@@ -9,13 +9,14 @@ let
     name = "tarballs";
     text = builtins.concatStringsSep "\n" node-tarballs;
   };
-  build-dependencies = with pkgs ; [nodejs openjdk clojure git makeWrapper] ;
+  build-dependencies = with pkgs ; [nodejs openjdk clojure git makeWrapper
+                                    just lnav] ;
   makewrapper-command = builtins.concatStringsSep " "
     [
       ''makeWrapper''
       ''${pkgs.nodejs}/bin/npx''
       ''$out/bin/dummett_library_frontend''
-      ''--add-flags serve''
+      ''--add-flags http-server''
       ''--add-flags "$out/public"''
     ] ;
 in {

@@ -35,7 +35,7 @@ let lock = builtins.fromJSON (builtins.readFile ../deps-lock.json) ;
           path = dotclojure ;
         }
       ] ;
-    build-deps =  with pkgs ; [ openjdk clojure git makeWrapper] ;
+    build-deps =  with pkgs ; [ openjdk clojure git makeWrapper just] ;
     build-commands = [''clj -T:prod/build uber''] ;
     install-commands =
       [

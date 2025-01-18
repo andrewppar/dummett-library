@@ -25,11 +25,6 @@
      in {
        packages.backend = backend.dummett-library ;
        packages.frontend = frontend.dummett-library ;
-       packages.default = all-packages ;
-       #devShells.default = import ./build/dev-shell.nix {
-       #  pkgs = pkgs ;
-       #  package-name = pname ;
-       #  package-version = pversion ;
-       #} ;
-     });
+       packages.all = all-packages ;
+       packages.default = frontend.dummett-library;});
 }

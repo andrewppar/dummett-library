@@ -1,9 +1,28 @@
 (ns dummett-library.core
   (:require
    [reagent.dom           :as rdom]
+   [reitit.core          :as reitit]
    [re-frame.core         :as rf]
    [ajax.core             :as ajax]
-   [dummett-library.views :as views]))
+   [dummett-library.views.library :as views]))
+
+(defonce router
+  (reitit/router
+   [["/" {:name        :prover
+          :view        #'views/proof-section
+          :controllers [{:start (fn [_] (rf/dispatch [::events/init-proof-section]))}]}]
+    ["/tutorial" {:name :tutorial
+                  :view #'views/tutorial-page
+                  :controllers
+                  [{:start (fn [_]
+                             (rf/dispatch
+                              [::events/init-tutorial-section]))}]}]
+    ["/formulas" {:name :formulas
+                  :view #'views/formulas-page
+                  :controllers
+                  [{:start (fn [_]
+                             (rf/dispatch
+                              [::events/init-formulas-section]))}]}]]))
 
 ;; define your app data so that it doesn't get over-written on reload
 
