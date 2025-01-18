@@ -1,4 +1,5 @@
-(ns dummett-library.views.navigation)
+(ns dummett-library.views.navigation
+  (:require [re-frame.core :as rf]))
 
 (defn navbar []
   [:nav.navbar.is-inverted
@@ -9,7 +10,10 @@
     [:div.navbar-start
      [:a.navbar-item {:href "/"} "Dummett Library"]]
     [:div.navbar-end
-     [:div.navbar-item "admin"]]]])
+     [:a.navbar-item {:href "/admin"} "admin"]]]])
+
+(defn navigate! [match _]
+  (rf/dispatch [:common/navigate match]))
 
    ;;[:div.container
     #_[:div.navbar-brand [:a.navbar-item

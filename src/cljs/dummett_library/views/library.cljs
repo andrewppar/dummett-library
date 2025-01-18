@@ -75,6 +75,7 @@
 
 (defn start-page []
   (let [search-results @(rf/subscribe [::subs/search-results])]
+
     [:div.app
      [:div {:class "has-navbar-fixed-top"}
       [nav/navbar]
@@ -110,5 +111,5 @@
 (defn admin-page []
   [:div.app
    [:div {:class "has-navbar-fixed-top"}
-    [nav/navbar]]
-   [:div [:p "admin"]]])
+    [nav/navbar]
+    [:div [:p "admin"]]]])
