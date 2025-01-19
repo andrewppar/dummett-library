@@ -10,7 +10,7 @@ let
     text = builtins.concatStringsSep "\n" node-tarballs;
   };
   build-dependencies = with pkgs ; [nodejs openjdk clojure git makeWrapper
-                                    just lnav] ;
+                                    just process-compose] ;
   makewrapper-command = builtins.concatStringsSep " "
     [
       ''makeWrapper''

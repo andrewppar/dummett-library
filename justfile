@@ -7,34 +7,15 @@ clean:
 build:
     nix build .\#all
 
-run target: build
-    #!/bin/bash
-    case {{target}} in
-        frontend)
-            ./result/bin/dummett_library_frontend
-            ;;
-        backend)
-            ./result/bin/dummett_library_backend
-            ;;
-        *)
-            printf "\033[0;31mERROR:\033[0m Must run either"
-            printf "'frontend' or 'backend'. "
-            printf "Got {{target}}\n"
-            ;;
-    esac
+run: build
+    process-compose -f build/process-compose.yml -t=false backend/run frontend/run
 
 dev target:
     #!/bin/bash
     case {{target}} in
         frontend)
-            npx shadow-cljs watch app
+            process-compose -f build/process-compose.yml -t=false backend/run frontend/dev
             ;;
         backend)
-            clj -M:dev/repl
-            ;;
-        *)
-            printf "\033[0;31mERROR:\033[0m Must run either"
-            printf "'frontend' or 'backend'. "
-            printf "Got {{target}}\n"
-            ;;
+            process-compose -f build/process-compose.yml -t=false backend/dev
     esac
