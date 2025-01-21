@@ -1,4 +1,4 @@
-(ns dummett-library.events
+(ns dummett-library.events.core
   (:require
    [ajax.core :as ajax]
    [day8.re-frame.http-fx]
@@ -8,21 +8,20 @@
    [reitit.frontend.controllers :as rfc]))
 
 (rf/reg-event-db
-  :common/navigate
-  (fn [db [_ match]]
-    (println db)
-    (let [old-match (:common/route db)
-          new-match (assoc match :controllers
-                           (rfc/apply-controllers
-                            (:controllers old-match) match))]
-      (assoc db :common/route new-match))))
+ :common/navigate
+ (fn [db [_ match]]
+   (let [old-match (:common/route db)
+         new-match (assoc match :controllers
+                          (rfc/apply-controllers
+                           (:controllers old-match) match))]
+     (assoc db :common/route new-match))))
 
 (rf/reg-event-fx
  ::fetch-search-results
  (fn [_ [_ search-string]]
    (let [encoded-search (gs/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
-                         "http://" "localhost:4000"
+                         "http://" "192.168.1.128:4000"
                          "/query?query-string=" encoded-search)
                    :method :get
                    :format (ajax/transit-request-format)
@@ -50,6 +49,7 @@
 (rf/reg-event-db
  ::clear-search-results-db
  (fn [db _]
+   (println db)
    (assoc db
           :search-results nil
           :focal-result nil)))
@@ -99,17 +99,23 @@
  (fn [db _]
    (assoc db :start-page "")))
 
-(rf/reg-event-fx
- :fetch-admin-page
- (fn [_ _]
-   {:dispatch [:set-admin-page]}))
+(rf/reg-sub
+  :common/route
+  (fn [db _]
+    (-> db :common/route)))
 
-(rf/reg-event-fx
- ::init-admin-page
- (fn [_ _]
-   {:dispatch [:fetch-admin-page]}))
+(rf/reg-sub
+  :common/page
+  :<- [:common/route]
+  (fn [route _]
+    (-> route :data :view)))
 
 (rf/reg-event-db
- :set-admin-page
+ ::navbar-burger
  (fn [db _]
-   (assoc db :admin-page "")))
+   (update db ::navbar-burger not)))
+
+(rf/reg-sub
+ ::navbar-burger
+ (fn [db _]
+   (get db ::navbar-burger)))

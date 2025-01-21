@@ -15,3 +15,15 @@
  ::focal-showing?
  (fn [db]
    (boolean (get db :focal-result))))
+
+(rf/reg-sub
+ ::token
+ (fn [db]
+   (println db)
+   (get db :token)))
+
+(rf/reg-sub
+ ::email
+ (fn [db]
+   (println db)
+   (get db :email)))

@@ -1,30 +1,44 @@
 (ns dummett-library.views.navigation
-  (:require [re-frame.core :as rf]))
+  (:require
+   [dummett-library.subs :as subs]
+   [re-frame.core :as rf]
+   [reagent.core :as r]))
+
+(defn admin [burger-active?]
+  [:div.navbar-item
+        {:class "has-dropdown is-hoverable"}
+        [:a.navbar-link "admin panel"]
+        [:div.navbar-dropdown
+         [:a.navbar-item
+          {:href "#/admin/add"
+           :on-click (fn [] (reset! burger-active? false))} "Add Documents"]]])
 
 (defn navbar []
-  [:nav.navbar.is-inverted
-   {:class "is-fixed-top"}
-   [:div.navbar-brand
-    [:a.navbar-item  "𝜑 "]]
-   [:div.navbar-menu {:id "navbar"}
-    [:div.navbar-start
-     [:a.navbar-item {:href "/"} "Dummett Library"]]
-    [:div.navbar-end
-     [:a.navbar-item {:href "/admin"} "admin"]]]])
+  (r/with-let [burger-active? (r/atom false)]
+    [:nav.navbar.is-inverted
+     {:class "is-fixed-top"}
+     [:div.navbar-brand
+      [:a.navbar-item {:href "/" :style {:font-weight :bold}} "𝜑 "]
+      [:a.navbar-burger
+       (cond-> {:role "button" :aria-label "menu" :aria-expanded false :data-target "navbar"
+                :on-click (fn [] (swap! burger-active? not))}
+         @burger-active? (assoc :class "is-active"))
+       [:span {:aria-hidden true}]
+       [:span {:aria-hidden true}]
+       [:span {:aria-hidden true}]]]
+     [:div.navbar-menu
+      (cond-> {:id "navbar"}
+        @burger-active? (assoc :class "is-active"))
+      [:div.navbar-start
+       [:a.navbar-item {:href "/"
+                        :on-click (fn [] (reset! burger-active? false))} "Dummett Library"]]
+      [:div.navbar-end
+       [:a.navbar-item {:href "#/login"
+                        :on-click (fn [] (reset! burger-active? false))} "login"]
+       (let [auth-token @(rf/subscribe [::subs/token])]
+         (when (and auth-token ;; admin-token
+                    )
+           [admin burger-active?]))]]]))
 
 (defn navigate! [match _]
   (rf/dispatch [:common/navigate match]))
-
-   ;;[:div.container
-    #_[:div.navbar-brand [:a.navbar-item
-                        {:class "is-size-2"
-                         :href "/"
-                         :style {:font-weight :bold}} "𝜑 "]]
-;;    [:div.navbar-start
-;;     #_[:nav
-;;      [:p {:class "has-text-centered has-text-white is-size-2"}
-;;       "Dummett Library"]]
-;;     [:div.narbar-item {:class "has-text-white has-text-centered is-site-2"}
-;;      [:p {:class "level-item"} "admin"]]]
-;;  ;;  ]
-;;   ])

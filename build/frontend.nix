@@ -9,8 +9,7 @@ let
     name = "tarballs";
     text = builtins.concatStringsSep "\n" node-tarballs;
   };
-  build-dependencies = with pkgs ; [nodejs openjdk clojure git makeWrapper
-                                    just process-compose] ;
+  build-dependencies = with pkgs ; [nodejs openjdk clojure git makeWrapper] ;
   makewrapper-command = builtins.concatStringsSep " "
     [
       ''makeWrapper''
@@ -20,6 +19,7 @@ let
       ''--add-flags "$out/public"''
     ] ;
 in {
+  deps = build-dependencies ;
   dummett-library = pkgs.stdenv.mkDerivation {
     name = package-name ;
     version = package-version ;

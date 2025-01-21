@@ -22,9 +22,24 @@
            name = "all" ;
            paths = [backend.dummett-library frontend.dummett-library] ;
          } ;
+         dev = import ./build/dev.nix {};
+         shell-fns = builtins.concatStringsSep "\n"
+           [
+             dev.build
+             dev.clean
+             dev.dev
+             dev.run
+           ];
      in {
        packages.backend = backend.dummett-library ;
        packages.frontend = frontend.dummett-library ;
        packages.all = all-packages ;
-       packages.default = frontend.dummett-library;});
+       packages.default = frontend.dummett-library;
+       devShells.default = pkgs.mkShell {
+         name = pname ;
+         buildInputs = [ pkgs.process-compose ] ++ backend.deps ++ frontend.deps ;
+         shellHook =
+           shell-fns + ''echo "Build the Dummett Library..."'';
+       };
+     });
 }

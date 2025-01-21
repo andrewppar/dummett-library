@@ -53,6 +53,7 @@ let lock = builtins.fromJSON (builtins.readFile ../deps-lock.json) ;
       ] ;
 
 in {
+  deps = build-deps ;
   dummett-library = pkgs.stdenv.mkDerivation {
     name = package-name ;
     version = package-version ;
