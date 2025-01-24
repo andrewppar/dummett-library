@@ -21,50 +21,17 @@
           [{:start (fn [_]
                      (rf/dispatch [::events/init-start-page]))}]}]
     ["/admin/add" {:name :admin.add
-             :view #'views.admin.add/page
-             :controllers
-             [{:start (fn [_]
-                        (rf/dispatch [::events.admin/init-add-page]))}]}]
+                   :view #'views.admin.add/page
+                   :controllers
+                   [{:start
+                     (fn [_]
+                       (rf/dispatch [::events.admin/init-add-page]))}]}]
     ["/login" {:name :login
                :view #'views.login/page
                :controllers
-               [{:start (fn [_]
-                          (rf/dispatch [::events.login/init-login-page]))}]}]
-    ]))
-
-;;   #_[["/" {:name        :prover
-;;          :view        #'views/proof-section
-;;          :controllers [{:start (fn [_] (rf/dispatch [::events/init-proof-section]))}]}]
-;;    ["/tutorial" {:name :tutorial
-;;                  :view #'views/tutorial-page
-;;                  :controllers
-;;                  [{:start (fn [_]
-;;                             (rf/dispatch
-;;                              [::events/init-tutorial-section]))}]}]
-;;    ["/formulas" {:name :formulas
-;;                  :view #'views/formulas-page
-;;                  :controllers
-;;                  [{:start (fn [_]
-;;                             (rf/dispatch
-;;                              [::events/init-formulas-section]))}]}]]))
-
-;; define your app data so that it doesn't get over-written on reload
-
-;;(defn quote []
-;;  (let [data (atom "quote app")]
-;;    (fn []
-;;      [:div.cards>div.card
-;;       [:h2.card-header.text-center "Dummett Library"]
-;;       [:div.card-body.text-center
-;;        [:p#quote @data]
-;;        [:p#author @data]]
-;;       [:div.card-footer.center.text-center
-;;        [:button#twitter.outline>a#tweet
-;;         {:href "#"
-;;          :target "_blank"}
-;;         [:i.fi-social-twitter " Tweet"]]
-;;        [:button#new-quote.outline
-;;         [:i.fi-shuffle " New Quote"]]]])))
+               [{:start
+                 (fn [_]
+                   (rf/dispatch [::events.login/init-login-page]))}]}]]))
 
 (defn start-router! []
   (rfe/start!
@@ -98,7 +65,8 @@
   ;; so it is available even in :advanced release builds
   (start-router!)
   (load-interceptors!)
-  (start))
+  (start)
+  (rf/dispatch [::events.login/sync-auth-token]))
 
 (defn stop []
   ;; stop is called before any code is reloaded
