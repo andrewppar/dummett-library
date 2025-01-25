@@ -3,27 +3,20 @@
 
 (rf/reg-sub
  ::search-results
- (fn [db]
-   (get db :search-results)))
+ (fn [db] (get db :search-results)))
 
 (rf/reg-sub
  ::focal-result
- (fn [db]
-   (get db :focal-result)))
+ (fn [db] (get db :focal-result)))
 
 (rf/reg-sub
  ::focal-showing?
- (fn [db]
-   (boolean (get db :focal-result))))
+ (fn [db] (boolean (get db :focal-result))))
 
 (rf/reg-sub
  ::token
- (fn [db]
-   (println db)
-   (get db :token)))
+ (fn [db] (get db :token)))
 
 (rf/reg-sub
  ::email
- (fn [db]
-   (println db)
-   (get db :email)))
+ (fn [db] (get db :email)))

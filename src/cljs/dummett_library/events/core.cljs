@@ -49,7 +49,6 @@
 (rf/reg-event-db
  ::clear-search-results-db
  (fn [db _]
-   (println db)
    (assoc db
           :search-results nil
           :focal-result nil)))

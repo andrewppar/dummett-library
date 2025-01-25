@@ -11,7 +11,10 @@
         [:div.navbar-dropdown
          [:a.navbar-item
           {:href "#/admin/add"
-           :on-click (fn [] (reset! burger-active? false))} "Add Documents"]]])
+           :on-click (fn [] (reset! burger-active? false))} "Add Documents"]
+         [:a.navbar-item
+          {:href "#/admin/user"
+           :on-click (fn [] (reset! burger-active? false))} "Manage Users"]]])
 
 (defn navbar []
   (r/with-let [burger-active? (r/atom false)]

@@ -3,6 +3,7 @@
    [ajax.core :as ajax]
    [dummett-library.views.library :as views]
    [dummett-library.views.admin.add :as views.admin.add]
+   [dummett-library.views.admin.user :as views.admin.user]
    [dummett-library.views.login :as views.login]
    [dummett-library.events.login :as events.login]
    [dummett-library.events.admin :as events.admin]
@@ -20,12 +21,19 @@
           :controllers
           [{:start (fn [_]
                      (rf/dispatch [::events/init-start-page]))}]}]
-    ["/admin/add" {:name :admin.add
-                   :view #'views.admin.add/page
-                   :controllers
-                   [{:start
-                     (fn [_]
-                       (rf/dispatch [::events.admin/init-add-page]))}]}]
+    ["/admin"
+     ["/add" {:name :admin.add
+              :view #'views.admin.add/page
+              :controllers
+              [{:start
+                (fn [_]
+                  (rf/dispatch [::events.admin/init-add-page]))}]}]
+     ["/user" {:name :admin.user
+               :view #'views.admin.user/page
+               :controllers
+               [{:start
+                 (fn [_]
+                   (rf/dispatch [::events.admin/init-user-page]))}]}]]
     ["/login" {:name :login
                :view #'views.login/page
                :controllers

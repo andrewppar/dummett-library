@@ -77,7 +77,7 @@
   (let [search-results @(rf/subscribe [::subs/search-results])]
     [:div.app
      [:div.section {:class "is-small"}
-      [:div {:class "hero-body"}
+      [:div
        [:div {:class "field has-addons"}
         [:div.control
          [:a {:class "button is-primary"
@@ -99,7 +99,9 @@
                                              (. js/document)
                                              .-value)]
                         (search search-text))))}]]]]]
-     [search-result-section search-results]
+     (when search-results
+       [:div.box
+        [search-result-section search-results]])
      [:div.section {:class "is-small"}
       [:button {:class "button is-danger"
                 :on-click #(clear-search-results)}
