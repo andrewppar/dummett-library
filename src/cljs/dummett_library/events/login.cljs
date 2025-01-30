@@ -1,17 +1,36 @@
 (ns dummett-library.events.login
-  (:require [re-frame.core :as rf]))
+  (:require
+   [re-frame.core :as rf]
+   [ajax.core :as ajax]))
 
 (rf/reg-event-db
- :set-auth-internal
+ ::set-auth-db-interanal
  (fn [db [_ email token]]
    (assoc db :email email :token token)))
 
 (rf/reg-event-fx
+ ::set-auth-token-internal
+ (fn [_ [_ response]]
+   (println response)))
+
+(rf/reg-event-db
+ ::set-auth-error
+ (fn [db [_ response]]
+   (println response)
+   (assoc db :error response)))
+
+(rf/reg-event-fx
  ::set-auth-token
  (fn [_ [_ email password]]
-   (. js/sessionStorage setItem "token" (str email password))
-   (. js/sessionStorage setItem "email" (str email))
-   {:dispatch [:set-auth-internal email password]}))
+   (let [creds (str email ":" password)
+         auth (str "Basic " (js/btoa creds))]
+     {:http-xhrio {:uri (str "http://" "localhost:4000" "/login")
+                   :method :post
+                   :headers {:authorization auth}
+                   :format (ajax/transit-request-format)
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success [::set-auth-token-internal]
+                   :on-failure [::set-auth-error]}})))
 
 (rf/reg-event-db
  :sync-auth-internal

@@ -21,7 +21,7 @@
  (fn [_ [_ search-string]]
    (let [encoded-search (gs/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
-                         "http://" "192.168.1.128:4000"
+                         "http://" "localhost:4000"
                          "/query?query-string=" encoded-search)
                    :method :get
                    :format (ajax/transit-request-format)

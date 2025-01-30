@@ -177,13 +177,18 @@
     (reset!
      server
      (server/run-server
-      (cors/wrap-cors
-       (middleware/wrap-defaults
-        #'app middleware/api-defaults)
+      #_(cors/wrap-cors
+       (middleware/wrap-defaults #'app middleware/api-defaults)
        :access-control-allow-origin [#".*"]
        :access-control-allow-methods [:get :put :post :delete]
-       :access-control-allow-headers ["Origin" "X-Requested-With"
-                                      "Content-Type" "Accept"])
+       :access-control-allow-headers
+       #{"accept"
+         "accept-encoding"
+         "accept-language"
+         "authorization"
+         "content-type"
+         "origin"
+         "x-requested-with"})
       {:port port}))))
 
 (defn stop! []
