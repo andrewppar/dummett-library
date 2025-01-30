@@ -4,7 +4,9 @@
    [dummett-library.store.document :as document]
    [dummett-library.store.store :as store]
    [integrant.core :as ig]
-   [dummett-library.store.writer :as writer]))
+   [dummett-library.store.writer :as writer])
+  (:import
+   (org.apache.lucene.index Term)))
 
 (defn ^:private get-env
   "Get the value of `env-var` or supply default."
@@ -88,6 +90,15 @@
             (fn [{:keys [page-number content]}]
               (.addDocument writer (page-fn page-number content))))))))
 
+(defn add-user!
+  [email salt password role]
+  (with-transaction writer
+    (.addDocument writer (document/user email salt password role))))
+
+(defn remove-user!
+  [email]
+  (with-transaction writer
+    (.deleteDocuments writer (into-array [(Term. "email" email)]))))
 
 (comment
   @state

@@ -43,6 +43,12 @@
        searcher analyzer store formatter hit-count document-types query-string)
       (throw (ex-info "Query State not initialized" {})))))
 
+(defn user
+  "Get user with `email`"
+  [searcher analyzer email]
+  (query/user searcher analyzer email))
+
+
 (comment
   @state
   )

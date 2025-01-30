@@ -5,6 +5,9 @@
   compojure/compojure {:mvn/version "1.6.1"}
   http-kit/http-kit {:mvn/version "2.3.0"}
   integrant/integrant {:mvn/version "0.13.1"}
+  io.jsonwebtoken/jjwt-api {:mvn/version "0.12.6"}
+  io.jsonwebtoken/jjwt-impl {:mvn/version "0.12.6"}
+  io.jsonwebtoken/jjwt-jackson {:mvn/version "0.12.6"}
   org.clojure/clojure {:mvn/version "1.12.0"}
   org.apache.lucene/lucene-core {:mvn/version "9.2.0"}
   org.apache.lucene/lucene-highlighter {:mvn/version "9.2.0"}

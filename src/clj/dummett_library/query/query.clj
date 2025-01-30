@@ -22,6 +22,12 @@
      nil document-types)
     (.build builder)))
 
+(defn user-query [analyzer email]
+  (let [term (.parse (QueryParser. "email" analyzer) email)
+        builder  (BooleanQuery$Builder.)]
+    (.add builder term BooleanClause$Occur/MUST)
+    (.build builder)))
+
 (defn new-query
   "Run a query for pages matching text"
   [analyzer query document-types]
@@ -47,12 +53,7 @@
      frags)))
 
 (defn ^:private ->document
-  "Convert a Lucene ScoreDoc object
-  to a map"
   [^IndexSearcher searcher
-   ^StandardAnalyzer analyzer
-   ^Highlighter highlighter
-   ^NIOFSDirectory store
    ^ScoreDoc score-doc]
   (let [doc-id (.doc score-doc)
         doc (.doc searcher doc-id)
@@ -78,17 +79,29 @@
     ;; and don't do this reduction...
     ;; Maybe we need to track labels we expect
     ;; to have multiple values...
-    (assoc (reduce-kv (fn [result key value]
-                        (if (and (vector? value)
-                                 (= (count (set value)) 1))
+    (reduce-kv (fn [result key value]
+                 (if (and (vector? value)
+                          (= (count (set value)) 1))
 
-                          (assoc result key (first value))
-                          (assoc result key value)))
-                      {} as-map)
+                   (assoc result key (first value))
+                   (assoc result key value)))
+               {} as-map)))
+
+(defn ^:private ->text-document
+  "Convert a Lucene ScoreDoc object
+  to a map"
+  [^IndexSearcher searcher
+   ^StandardAnalyzer analyzer
+   ^Highlighter highlighter
+   ^NIOFSDirectory store
+   ^ScoreDoc score-doc]
+  (let [doc-id (.doc score-doc)
+        doc (.doc searcher doc-id)]
+    (assoc (->document searcher score-doc)
            :fragments (->fragments
                        doc doc-id highlighter analyzer store))))
 
-(defn score-search-results
+(defn score-text-search-results
   "Rank search results"
   [^TopDocs search-results
    ^IndexSearcher searcher
@@ -98,8 +111,17 @@
   (map
    (fn [doc-idx]
      (let [score-doc (nth (.scoreDocs search-results) doc-idx)]
-       (->document searcher analyzer highlighter store score-doc)))
+       (->text-document searcher analyzer highlighter store score-doc)))
    (range (count (.scoreDocs search-results)))))
+
+(defn serialize-user-search-results
+  "Show user results"
+  [^TopDocs search-results
+   ^IndexSearcher searcher]
+  (let [docs (.scoreDocs search-results)]
+    (map
+     (comp (partial ->document searcher) (partial nth docs))
+     (range (count docs)))))
 
 (defn query
   "Run a query against the index."
@@ -113,14 +135,22 @@
     (.setTextFragmenter highlighter fragmenter)
     (-> searcher
         (.search query hits-per-page)
-        (score-search-results searcher analyzer highlighter store))))
+        (score-text-search-results searcher analyzer highlighter store))))
+
+(defn user
+  "Query for a user"
+  [searcher analyzer email]
+  (let [query (user-query analyzer email)]
+    (-> searcher
+        (.search query 2)
+        (serialize-user-search-results searcher))))
+
 
 (defn all-items
   [store field]
   (let [reader  (DirectoryReader/open store)
         indexes (range (.numDocs reader))]
     (->> indexes
-         (map
-          (fn [idx]
-            (-> reader (.document idx) (.get field))))
+         (map (fn [idx] (-> reader (.document idx) (.get field))))
+         (filter (complement nil?))
          distinct)))

@@ -38,6 +38,7 @@
        devShells.default = pkgs.mkShell {
          name = pname ;
          buildInputs = [ pkgs.process-compose ] ++ backend.deps ++ frontend.deps ;
+         SECRET_KEY = "asdfSFS34wfsdfsdfSDSD32dfsddDDerQSNCK34SOWEK5354fdgdf4" ;
          shellHook =
            shell-fns + ''echo "Build the Dummett Library..."'';
        };

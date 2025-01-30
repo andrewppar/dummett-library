@@ -7,8 +7,11 @@ clean:
 build:
     nix build .\#all
 
-run: build
+run: deps build
     process-compose -f build/process-compose.yml -t=false up backend/run frontend/run
+
+deps:
+	nix run github:jlesquembre/clj-nix#deps-lock
 
 dev target:
     #!/bin/bash

@@ -31,3 +31,12 @@
     (.add document page-field)
     (.add document text-field)
     document))
+
+(defn user
+  "Create a document with an email, password, and role field."
+  [email salt password role]
+  (doto (make)
+    (.add (new-field "email" email :string))
+    (.add (new-field "salt" salt :string))
+    (.add (new-field "password" password :string))
+    (.add (new-field "role" role :string))))

@@ -6,6 +6,8 @@
    [compojure.route :as route]
    [dummett-library.add :as add]
    [dummett-library.log :as log :refer [defn-logged]]
+   [dummett-library.admin.user :as user]
+   [dummett-library.admin.token :as token]
    [dummett-library.query.core :as query]
    [dummett-library.store.core :as store]
    [dummett-library.store.searcher :as searcher]
@@ -107,10 +109,64 @@
   {:status 200
    :body  (json/generate-string (add-internal req))})
 
+;;; User Management
+(defn-logged add-user!
+  "Add a user to the application."
+  {:log-level :info :result-fn count}
+  [{{:strs [authorization]} :headers :as req}]
+  (let [role (get-in (token/parse authorization) [:body "role"])]
+    (if (user/admin? role)
+      (let [{:keys [email password role]}
+            (-> (get req :body)
+                (slurp :encoding "UTF-8")
+                (json/parse-string keyword))
+            {add-status :status} (user/add! email password role)]
+        (if (= add-status 200)
+          {:body "User Added"
+           :status 200}
+          {:body "User not added"
+           :status 500}))
+      {:status 401
+       :body (json/generate-string "Not authorized")})))
+
+(defn-logged remove-user!
+  "Remove user from the database."
+  {:log-level :info :result-fn identity}
+  [{{:strs [authorization]} :headers
+    {:strs [email]} :body}]
+  (let [{token-body :body} (token/parse authorization)]
+    (if (or (user/admin? (get token-body "role"))
+            (= email (get token-body "email")))
+      (update (user/remove! email) :body (fnil json/generate-string ""))
+      {:status 401 :body "Unauthorized"})))
+
+(defn-logged update-role!
+  "Update a users role"
+  {:log-level :info :result-fn identity}
+  [{{:strs [authorization]} :headers
+    {:strs [email role]} :body}]
+  (let [{token-body :body} (token/parse authorization)]
+    (if (user/admin? (get token-body "role"))
+      (update (user/edit! email :role role) :body (fnil json/generate-string ""))
+      {:status 401 :body "Unauthorized"})))
+
+(defn-logged login
+  "Login a user by generating a token."
+  {:log-level :info :result-fn identity}
+  [{{:strs [authorization]} :headers}]
+  (let [{{:strs [email password]} :body status :status} (token/parse authorization)]
+    (if (<= 200 status 300)
+      (update (token/token email password) :body (fnil json/generate-string ""))
+      {:status status :body (json/generate-string "Not authorized")})))
+
 (compojure/defroutes app
   (compojure/GET "/health-check" [] health-check)
   (compojure/GET "/query" req (query-wrapper req))
   (compojure/POST "/document/add" req (add req))
+  (compojure/POST "/admin/user/add" req (add-user! req))
+  (compojure/POST "/admin/user/remove" req (remove-user! req))
+  (compojure/POST "/admin/user/update" req (update-role! req))
+  (compojure/POST "/login" req (login req))
   (route/not-found "<h1>Page not found</h1>"))
 
 (defonce server (atom nil))
