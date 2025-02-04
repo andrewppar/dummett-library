@@ -3,6 +3,7 @@
    [ajax.core :as ajax]
    [day8.re-frame.http-fx]
    [dummett-library.db :as db]
+   [dummett-library.events.config :as cfg]
    [goog.string :as gs]
    [re-frame.core :as rf]
    [reitit.frontend.controllers :as rfc]))
@@ -21,7 +22,7 @@
  (fn [_ [_ search-string]]
    (let [encoded-search (gs/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
-                         "http://" "localhost:4000"
+                         "http://" cfg/library-host
                          "/query?query-string=" encoded-search)
                    :method :get
                    :format (ajax/transit-request-format)

@@ -1,8 +1,9 @@
 (ns dummett-library.events.admin
   (:require
    [ajax.core :as ajax]
-   [re-frame.core :as rf]
-   [dummett-library.events.login :as login]))
+   [dummett-library.events.config :as cfg]
+   [dummett-library.events.login :as login]
+   [re-frame.core :as rf]))
 
 (rf/reg-event-db
  ::admin-error
@@ -82,7 +83,7 @@
  (fn [_ [_ email password role]]
    (if-let [token (. js/sessionStorage getItem "token")]
      {:http-xhrio
-      {:uri (str "http://" "localhost:4000" "/admin/user/add")
+      {:uri (str "http://" cfg/library-host "/admin/user/add")
        :method :post
        :headers {:authorization (str "Bearer " token)}
        :params {"email" email "password" password "role"role}
@@ -104,7 +105,7 @@
  (fn [_ [_ _]]
    (if-let [token (. js/sessionStorage getItem "token")]
      {:http-xhrio
-      {:uri (str "http://" "localhost:4000" "/admin/user/list")
+      {:uri (str "http://" cfg/library-host "/admin/user/list")
        :method :get
        :headers {:authorization (str "Bearer " token)}
        :format (ajax/transit-request-format)
@@ -118,7 +119,7 @@
  (fn [_ [_ email]]
    (if-let [token (. js/sessionStorage getItem "token")]
      {:http-xhrio
-      {:uri (str "http://" "localhost:4000" "/admin/user/remove?email=" email)
+      {:uri (str "http://" cfg/library-host "/admin/user/remove?email=" email)
        :method :delete
        :headers {:authorization (str "Bearer " token)}
        :format (ajax/transit-request-format)
@@ -132,7 +133,7 @@
  (fn [_ [_ email role]]
    (if-let [token (. js/sessionStorage getItem "token")]
      {:http-xhrio
-      {:uri (str "http://" "localhost:4000" "/admin/user/update")
+      {:uri (str "http://" cfg/library-host "/admin/user/update")
        :method :post
        :headers {:authorization (str "Bearer " token)}
        :params {"email" email "role" role}

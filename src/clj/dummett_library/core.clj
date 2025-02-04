@@ -5,9 +5,10 @@
    [compojure.core :as compojure]
    [compojure.route :as route]
    [dummett-library.add :as add]
-   [dummett-library.log :as log :refer [defn-logged]]
-   [dummett-library.admin.user :as user]
    [dummett-library.admin.token :as token]
+   [dummett-library.admin.user :as user]
+   [dummett-library.http :as http]
+   [dummett-library.log :as log :refer [defn-logged]]
    [dummett-library.query.core :as query]
    [dummett-library.store.core :as store]
    [dummett-library.store.searcher :as searcher]
@@ -16,8 +17,7 @@
    [ring.middleware.defaults :as middleware])
   (:gen-class))
 
-(def not-authorized-response
-  {:status 401 :body (json/generate-string "not authorized")})
+
 
 (defn init! []
   (log/init :info)
@@ -116,62 +116,64 @@
 (defn-logged add-user!
   "Add a user to the application."
   {:log-level :info :result-fn count}
-  [{{:strs [authorization]} :headers :as req}]
-  (let [role (get-in (token/parse authorization) [:body "role"])]
+  [{{:strs [authorization]} :headers body :body}]
+  ;; status?
+  (let [{token-body :body} (token/parse authorization)
+        role (get-in (json/parse-string token-body) ["body" "role"])]
     (if (user/admin? role)
-      (let [{:keys [email password role]}
-            (-> (get req :body)
-                (slurp :encoding "UTF-8")
-                (json/parse-string keyword))
-            {add-status :status} (user/add! email password role)]
-        (if (= add-status 200)
-          {:body (json/generate-string {:message "User Added"})
-           :status 200}
-          {:body (json/generate-string {:message "User not added"})
-           :status 500}))
-      not-authorized-response)))
+      (let [parsed-body (-> body
+                            (slurp :encoding "UTF-8")
+                            (json/parse-string keyword))
+            {:keys [email password role]} parsed-body]
+        (user/add! email password role))
+      (http/not-authorized))))
 
 (defn-logged remove-user!
   "Remove user from the database."
   {:log-level :info :result-fn identity}
   [{{:strs [authorization]} :headers
     {:strs [email]} :query-params}]
-  (let [{token-body :body} (token/parse authorization)]
-    (if (or (user/admin? (get token-body "role"))
-            (= email (get token-body "email")))
-      (update (user/remove! email) :body (fnil json/generate-string ""))
-      not-authorized-response)))
+  ;; status?
+  (let [{token-body :body} (token/parse authorization)
+        {user-email "email" user-role "role"} (get (json/parse-string token-body) "body")]
+    (if (or (user/admin? user-role)
+            (= email user-email))
+      (user/remove! email)
+      (http/not-authorized))))
 
 (defn-logged update-role!
   "Update a users role"
   {:log-level :info :result-fn identity}
-  [{{:strs [authorization]} :headers :as req}]
-  (let [{token-body :body} (token/parse authorization)]
-    (if (user/admin? (get token-body "role"))
-      (let [{:keys [email role]} (-> (get req :body)
-                                     (slurp :encoding "UTF-8")
-                                     (json/parse-string keyword))]
-        (-> (user/edit! email :role role)
-            (update :body (fnil json/generate-string ""))))
-      not-authorized-response)))
+  [{{:strs [authorization]} :headers body :body}]
+  ;; status?
+  (let [{token-body :body} (token/parse authorization)
+        role (get-in (json/parse-string token-body) ["body" "role"])]
+    (if (user/admin? role)
+      (let [parsed-body (-> body
+                            (slurp :encoding "UTF-8")
+                            (json/parse-string keyword))
+            {:keys [email role]} parsed-body]
+        (user/edit! email :role role))
+      (http/not-authorized))))
 
 (defn-logged list-users
   "List all users"
   {:log-level :info :result-fn count}
   [{{:strs [authorization]} :headers}]
   (let [{token-body :body} (token/parse authorization)]
-    (if (user/admin? (get token-body "role"))
-      (update (user/list-all) :body (fnil json/generate-string ""))
-      not-authorized-response)))
+    (if (user/admin? (get-in (json/parse-string token-body) ["body" "role"]))
+      (user/list-all)
+      (http/not-authorized))))
 
 (defn-logged login
   "Login a user by generating a token."
   {:log-level :info :result-fn identity}
   [{{:strs [authorization]} :headers}]
-  (let [{{:strs [email password]} :body status :status} (token/parse authorization)]
+  (let [{response-body :body status :status} (token/parse authorization)]
     (if (<= 200 status 300)
-      (update (token/token email password) :body (fnil json/generate-string ""))
-      not-authorized-response)))
+      (let [{{:keys [email password]} :body} (json/parse-string response-body keyword)]
+        (token/token email password))
+      (http/not-authorized))))
 
 (compojure/defroutes app
   (compojure/GET "/health-check" [] health-check)

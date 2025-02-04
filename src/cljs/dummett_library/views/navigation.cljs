@@ -4,6 +4,9 @@
    [re-frame.core :as rf]
    [reagent.core :as r]))
 
+(defn admin? [auth-token]
+  true)
+
 (defn admin [burger-active?]
   [:div.navbar-item
         {:class "has-dropdown is-hoverable"}

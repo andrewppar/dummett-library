@@ -7,9 +7,6 @@
    [reagent.core :as r]
    [re-frame.core :as rf]))
 
-(defn admin? [auth-token]
-  true)
-
 (defn notification [message]
   [:div.notification {:class "is-success" :id "admin-success"}
    [:button.delete

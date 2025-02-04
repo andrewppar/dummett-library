@@ -1,7 +1,8 @@
 (ns dummett-library.events.login
   (:require
-   [re-frame.core :as rf]
-   [ajax.core :as ajax]))
+   [ajax.core :as ajax]
+   [dummett-library.events.config :as cfg]
+   [re-frame.core :as rf]))
 
 (rf/reg-event-db
  ::set-auth-db-internal
@@ -27,7 +28,7 @@
  (fn [_ [_ email password]]
    (let [creds (str email ":" password)
          auth (str "Basic " (js/btoa creds))]
-     {:http-xhrio {:uri (str "http://" "localhost:4000" "/login")
+     {:http-xhrio {:uri (str "http://" cfg/library-host "/login")
                    :method :post
                    :headers {:authorization auth}
                    :format (ajax/transit-request-format)
