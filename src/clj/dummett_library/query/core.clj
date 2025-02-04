@@ -48,6 +48,11 @@
   [searcher analyzer email]
   (query/user searcher analyzer email))
 
+(defn list-users
+  "List all users."
+  [searcher analyzer]
+  (query/list-users searcher analyzer))
+
 
 (comment
   @state

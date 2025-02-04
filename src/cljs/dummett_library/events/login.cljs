@@ -4,20 +4,23 @@
    [ajax.core :as ajax]))
 
 (rf/reg-event-db
- ::set-auth-db-interanal
+ ::set-auth-db-internal
  (fn [db [_ email token]]
-   (assoc db :email email :token token)))
+   (-> db
+       (assoc :email email :token token)
+       (dissoc :login-error))))
 
 (rf/reg-event-fx
  ::set-auth-token-internal
- (fn [_ [_ response]]
-   (println response)))
+ (fn [_ [_ {:keys [email token]}]]
+   (. js/sessionStorage setItem "token" token)
+   (. js/sessionStorage setItem "email" email)
+   {:dispatch [::set-auth-db-internal email token]}))
 
 (rf/reg-event-db
  ::set-auth-error
- (fn [db [_ response]]
-   (println response)
-   (assoc db :error response)))
+ (fn [db [_ {:keys [status]}]]
+   (assoc db :login-error status)))
 
 (rf/reg-event-fx
  ::set-auth-token

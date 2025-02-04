@@ -31,7 +31,8 @@
           (.setIssuedAt builder (Date/from now))
           (.setExpiration builder (Date/from exp))
           (.signWith builder hmacKey)
-          {:body {:token (.compact builder)}
+          {:body {:token (.compact builder)
+                  :email email}
            :status 200})
         {:body {:token nil}
          :status 401}))))

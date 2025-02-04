@@ -17,6 +17,7 @@ in {
     commands = [
       ''case $1 in''
       ''    frontend)''
+      ''        nix build .#backend''
       ''        ${pcu} backend/run frontend/dev''
       ''        ;;''
       ''    backend)''

@@ -1,0 +1,43 @@
+## TODO: Make this into a full blown integration test
+
+## health-check
+GET http://localhost:4000/health-check
+Content-Type: application/json
+Accept: application/json
+
+## query
+GET http://localhost:4000/query?query-string=frege
+Content-Type: application/json
+Accept: application/json
+
+## login
+POST http://localhost:4000/login
+Content-Type: application/json
+Accept: application/json
+Authorization: Basic YW5wYXJpc2k6b25l
+
+## user
+POST http://localhost:4000/admin/user/add
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI1YmEwNWFhZC1lOGIwLTQxNGItOTBiMi1hMmU3NmZlMTM1ZGMiLCJpYXQiOjE3Mzg1NTc4ODQsImV4cCI6MTczODU1OTY4NH0.4BJi4d9slINhIu6s3ouHNntSfMBUx5lbQBiNzszQLbg
+
+{
+  "email": "george",
+  "password": "george",
+  "role": "user"
+}
+
+## list users
+GET http://localhost:4000/admin/user/list
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI1YmEwNWFhZC1lOGIwLTQxNGItOTBiMi1hMmU3NmZlMTM1ZGMiLCJpYXQiOjE3Mzg1NTc4ODQsImV4cCI6MTczODU1OTY4NH0.4BJi4d9slINhIu6s3ouHNntSfMBUx5lbQBiNzszQLbg
+
+## edit user
+POST http://localhost:4000/admin/user/update
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI1YmEwNWFhZC1lOGIwLTQxNGItOTBiMi1hMmU3NmZlMTM1ZGMiLCJpYXQiOjE3Mzg1NTc4ODQsImV4cCI6MTczODU1OTY4NH0.4BJi4d9slINhIu6s3ouHNntSfMBUx5lbQBiNzszQLbg
+
+{"email": "george", "role": "user"}

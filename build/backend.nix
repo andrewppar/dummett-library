@@ -59,6 +59,7 @@ in {
     version = package-version ;
     src = ./.. ;
     nativeBuildInputs = build-deps ;
+    SECRET_KEY="asdfSFS34wfsdfsdfSDSD32dfsddDDerQSNCK34SOWEK5354fdgdf4" ;
     buildPhase =builtins.concatStringsSep "\n"
       (
         [

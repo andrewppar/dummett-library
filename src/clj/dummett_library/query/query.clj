@@ -145,6 +145,22 @@
         (.search query 2)
         (serialize-user-search-results searcher))))
 
+(defn list-users
+  "List all users."
+  [searcher analyzer]
+  (let [user (.parse (QueryParser. "role" analyzer) "user")
+        admin (.parse (QueryParser. "role" analyzer) "admin")
+        inner-builder  (BooleanQuery$Builder.)]
+    (.add inner-builder user BooleanClause$Occur/SHOULD)
+    (.add inner-builder admin BooleanClause$Occur/SHOULD)
+    (let [inner-query (.build inner-builder)
+          builder (BooleanQuery$Builder.)]
+      (.add builder inner-query BooleanClause$Occur/MUST)
+      (let [query (.build builder)]
+        (-> searcher
+            (.search query 100)
+            (serialize-user-search-results searcher))))))
+
 
 (defn all-items
   [store field]

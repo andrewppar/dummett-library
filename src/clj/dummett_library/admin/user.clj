@@ -96,8 +96,17 @@
        (fn [{status :status :as result} {:keys [email salt password role]}]
          (let [docs-added (store/add-user! email salt password role)]
            (assoc result :status (if (> docs-added 0) status 404))))
-       {:status 200}
+       {:status 200 :body {:message (format "Updated %s" email)}}
        docs))))
+
+(defn list-all []
+  (let [searcher (searcher/make (store/store))
+        analyzer (store/analyzer)]
+    {:status 200
+     :body (mapv
+            (fn [user] (select-keys user [:email :role]))
+            (query/list-users searcher analyzer))}))
+
 
 (comment
   (add! "anparisi" "one" "user")

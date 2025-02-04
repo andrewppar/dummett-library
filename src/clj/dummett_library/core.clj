@@ -16,6 +16,9 @@
    [ring.middleware.defaults :as middleware])
   (:gen-class))
 
+(def not-authorized-response
+  {:status 401 :body (json/generate-string "not authorized")})
+
 (defn init! []
   (log/init :info)
   (log/info {:event "initialization" :status "starting"})
@@ -122,33 +125,44 @@
                 (json/parse-string keyword))
             {add-status :status} (user/add! email password role)]
         (if (= add-status 200)
-          {:body "User Added"
+          {:body (json/generate-string {:message "User Added"})
            :status 200}
-          {:body "User not added"
+          {:body (json/generate-string {:message "User not added"})
            :status 500}))
-      {:status 401
-       :body (json/generate-string "Not authorized")})))
+      not-authorized-response)))
 
 (defn-logged remove-user!
   "Remove user from the database."
   {:log-level :info :result-fn identity}
   [{{:strs [authorization]} :headers
-    {:strs [email]} :body}]
+    {:strs [email]} :query-params}]
   (let [{token-body :body} (token/parse authorization)]
     (if (or (user/admin? (get token-body "role"))
             (= email (get token-body "email")))
       (update (user/remove! email) :body (fnil json/generate-string ""))
-      {:status 401 :body "Unauthorized"})))
+      not-authorized-response)))
 
 (defn-logged update-role!
   "Update a users role"
   {:log-level :info :result-fn identity}
-  [{{:strs [authorization]} :headers
-    {:strs [email role]} :body}]
+  [{{:strs [authorization]} :headers :as req}]
   (let [{token-body :body} (token/parse authorization)]
     (if (user/admin? (get token-body "role"))
-      (update (user/edit! email :role role) :body (fnil json/generate-string ""))
-      {:status 401 :body "Unauthorized"})))
+      (let [{:keys [email role]} (-> (get req :body)
+                                     (slurp :encoding "UTF-8")
+                                     (json/parse-string keyword))]
+        (-> (user/edit! email :role role)
+            (update :body (fnil json/generate-string ""))))
+      not-authorized-response)))
+
+(defn-logged list-users
+  "List all users"
+  {:log-level :info :result-fn count}
+  [{{:strs [authorization]} :headers}]
+  (let [{token-body :body} (token/parse authorization)]
+    (if (user/admin? (get token-body "role"))
+      (update (user/list-all) :body (fnil json/generate-string ""))
+      not-authorized-response)))
 
 (defn-logged login
   "Login a user by generating a token."
@@ -157,14 +171,15 @@
   (let [{{:strs [email password]} :body status :status} (token/parse authorization)]
     (if (<= 200 status 300)
       (update (token/token email password) :body (fnil json/generate-string ""))
-      {:status status :body (json/generate-string "Not authorized")})))
+      not-authorized-response)))
 
 (compojure/defroutes app
   (compojure/GET "/health-check" [] health-check)
   (compojure/GET "/query" req (query-wrapper req))
   (compojure/POST "/document/add" req (add req))
   (compojure/POST "/admin/user/add" req (add-user! req))
-  (compojure/POST "/admin/user/remove" req (remove-user! req))
+  (compojure/GET "/admin/user/list" req (list-users req))
+  (compojure/DELETE "/admin/user/remove" req (remove-user! req))
   (compojure/POST "/admin/user/update" req (update-role! req))
   (compojure/POST "/login" req (login req))
   (route/not-found "<h1>Page not found</h1>"))
@@ -177,7 +192,7 @@
     (reset!
      server
      (server/run-server
-      #_(cors/wrap-cors
+      (cors/wrap-cors
        (middleware/wrap-defaults #'app middleware/api-defaults)
        :access-control-allow-origin [#".*"]
        :access-control-allow-methods [:get :put :post :delete]

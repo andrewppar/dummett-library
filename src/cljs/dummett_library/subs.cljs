@@ -20,3 +20,15 @@
 (rf/reg-sub
  ::email
  (fn [db] (get db :email)))
+
+(rf/reg-sub
+ ::login-error
+ (fn [db] (get db :login-error)))
+
+(rf/reg-sub
+ ::admin-success
+ (fn [db] (get db :admin-success)))
+
+(rf/reg-sub
+ ::user-list
+ (fn [db] (get db :users)))
