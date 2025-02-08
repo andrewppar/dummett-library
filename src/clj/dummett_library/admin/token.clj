@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [dummett-library.admin.user :as user]
+   [dummett-library.log :as log]
    [dummett-library.http :as http])
   (:import
    (io.jsonwebtoken SignatureAlgorithm Jwts)
@@ -14,30 +15,33 @@
 (def secret-key (System/getenv "SECRET_KEY"))
 
 (def hmacKey
-  (SecretKeySpec.
-   (.decode (Base64/getDecoder) secret-key)
-   (.getJcaName SignatureAlgorithm/HS256)))
+  (if secret-key
+    (SecretKeySpec.
+     (.decode (Base64/getDecoder) secret-key)
+     (.getJcaName SignatureAlgorithm/HS256))
+    (log/info "No secret key found, cannot use admin features.")))
 
 (defn token [email password]
-  (let [{:keys [status body] :as user-data} (user/fetch email)
-        parsed-body (json/parse-string body keyword)
-        role (get parsed-body :role)]
-    (if (> status 300)
-      user-data
-      (if (user/authenticated? password parsed-body)
-        (let [builder (Jwts/builder)
-              now (.toInstant (Date. (System/currentTimeMillis)))
-              exp (.plus now (Duration/ofMinutes 30))]
-          (.claim builder "email" email)
-          (.claim builder "role" role)
-          (.setSubject builder email)
-          (.setId builder (str (random-uuid)))
-          (.setIssuedAt builder (Date/from now))
-          (.setExpiration builder (Date/from exp))
-          (.signWith builder hmacKey)
-          (http/success
-           {:token (.compact builder) :email email :role role}))
-        (http/unauthorized)))))
+  (when secret-key
+    (let [{:keys [status body] :as user-data} (user/fetch email)
+          parsed-body (json/parse-string body keyword)
+          role (get parsed-body :role)]
+      (if (> status 300)
+        user-data
+        (if (user/authenticated? password parsed-body)
+          (let [builder (Jwts/builder)
+                now (.toInstant (Date. (System/currentTimeMillis)))
+                exp (.plus now (Duration/ofMinutes 30))]
+            (.claim builder "email" email)
+            (.claim builder "role" role)
+            (.setSubject builder email)
+            (.setId builder (str (random-uuid)))
+            (.setIssuedAt builder (Date/from now))
+            (.setExpiration builder (Date/from exp))
+            (.signWith builder hmacKey)
+            (http/success
+             {:token (.compact builder) :email email :role role}))
+          (http/unauthorized))))))
 
 (defn parse-dispatch [auth-string]
   (let [lower-auth (string/lower-case auth-string)]
@@ -51,18 +55,20 @@
 
 (defmethod parse :bearer
   [auth-string]
-  (let [matches (re-matches #"^(?i)bearer (.*)$" auth-string)
-        token (second matches)
-        parser-builder (Jwts/parser)]
-    (.setSigningKey parser-builder hmacKey)
-    (try
-      (let [parser (.parseClaimsJws (.build parser-builder) token)]
-        (http/success
-         {:header (.getHeader parser)
-          :body (.getBody parser)
-          :signature (.getSignature parser)}))
-      (catch io.jsonwebtoken.ExpiredJwtException _err
-        (http/make-response 401 {:status :expired})))))
+  (if hmacKey
+    (let [matches (re-matches #"^(?i)bearer (.*)$" auth-string)
+          token (second matches)
+          parser-builder (Jwts/parser)]
+      (.setSigningKey parser-builder hmacKey)
+      (try
+        (let [parser (.parseClaimsJws (.build parser-builder) token)]
+          (http/success
+           {:header (.getHeader parser)
+            :body (.getBody parser)
+            :signature (.getSignature parser)}))
+        (catch io.jsonwebtoken.ExpiredJwtException _err
+          (http/make-response 401 {:status :expired}))))
+    (http/make-response 401 {:status :disabled})))
 
 (defmethod parse :basic
   [auth-string]

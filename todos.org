@@ -1,4 +1,5 @@
 * TODO Update forms to clear when something happens
 * DONE Make the remove-user backend call return :message in its body
 * TODO Figure out the user experience for expired tokens - this just silently and inexplicably fails now
-* TODO Support the frontend to check if a token is admin too
+* DONE Support the frontend to check if a token is admin too
+* TODO We need to do some externs for production runs - in particular around the admin tokens, my guess is the js/sessionStorage stuff

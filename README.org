@@ -3,60 +3,106 @@
 
 We all have had a quote from Dummett's writings on our mind before, but can't remember where h wrote it. The Dummett Library is the solution to that problem. This library lets users search for text in Dummett's writings. It returns the top matches for the search along with some context around the matched quote.
 
+* Quick Start
+
+** Missing Pieces                                                  :noexport:
+*** TODO The backend needs to startup with an admin user available
+*** TODO The frontend should look at localhost by default for the backend, and this should be configurable
+
+The easiest way to build things is using [[https://nixos.org/download][nix]]
+
+1. Clone this repo and cd into it:
+#+name: clone-and-cd
+#+begin_src sh
+git clone git@github.com:andrewppar/dummett-library.git ; cd dummett-library
+#+end_src
+
+2. Build the executables:
+
+#+name: nix-build
+#+begin_src sh
+  nix build .#all
+#+end_src
+
+3. Run the backend and the frontend:
+
+#+name: run-all
+#+begin_src sh
+./result/bin/dummett_library_backend & ./result/bin/dummett_library_frontend
+#+end_src
+
+The app should now be available on =http://localhost:8080=
+
+Hitting =ctrl-c= kills the frontend service. But you'll have to kill the backend manually (sorry!)
+
+** Caveat
+
+There are no documents in the store and there are no admin users to add them. So if you want to search a document, you'll have to configure that too
+
+1. Add a secret for user encryption (this is bad practice, but I don't want to pay for external auth now :))
+
+#+name: secret
+#+begin_src sh
+  export SECRET_KEY=asdfSFS34wfsdfsdfSDSD32dfsddDDerQSNCK34SOWEK5354fdgdf4
+#+end_src
+
+2. Add an admin username and password:
+
+#+name: admin-user
+#+begin_src sh
+export ADMIN_USERNAME=dummett
+export ADMIN_PASSWORD=frege
+#+end_src
+
+3. Start the app again
+
+4. Add documents and search (in development)
+
 * Development
 ** Getting Started
+
+Per the [[* Quick Start]] install [[https://nixos.org/download][nix]]
+
+Then call =nix develop= from the root of the repo
+
 *** Backend (Clojure)
-To start a repl call
 
-#+BEGIN_SRC bash
-  clj -M:dev/repl
-#+END_SRC
+**** REPL
 
-Once in a repl switch to the core namespace and load it up
+To get a running repl:
 
-#+BEGIN_SRC clojure
-  (do
-    (ns dummett-library.core)
-    (use 'dummett-library.core :reload))
-#+END_SRC
+#+name: repl
+#+begin_src sh
+dev backend
+#+end_src
 
-In order to reindex the sample library call
+To load the app connect the repl and evaluate the =dummett_library.core/-main= function.
 
-#+BEGIN_SRC clojure
-  (reindex-dev!)
-#+END_SRC
+**** Build
 
-Finally, run a query for "Frege" with
+Once you're happy with things, build with
 
-#+BEGIN_SRC clojure
-  (query "Frege")
-#+END_SRC
+#+name: build-backend
+#+begin_src sh
+nix build .#backend
+#+end_src
 
-To set up the backend http server call
-
-#+BEGIN_SRC clojure
-(run!)
-#+END_SRC
+An executable called =dummett_library_backend= should have been created in =result/bin= that runs the backend service.
 
 *** Frontend (Clojurescript)
 
-Open a separate terminal window. To install the node dependencies call
+To watch the running app call
 
-#+BEGIN_SRC sh
-npm install --save-dev shadow-cljs
-#+END_SRC
+#+name: frontend dev
+#+begin_src sh
+dev frontend
+#+end_src
 
-To run the frontend call
-#+BEGIN_SRC sh
-shadow-cljs watch app
-#+END_SRC
+*** Run it All
 
-When you see
-#+BEGIN_SRC sh
-[:app] Configuring build.
-[:app] Compiling ...
-[:app] Build completed. (247 files, 246 compiled, 0 warnings, 16.45s)
-#+END_SRC
-or something like it the app is ready to visit. It is served on [[http://localhost:8700]]
+To run the app in full call
 
-
+#+name: run-all
+#+begin_src sh
+run
+#+end_src
