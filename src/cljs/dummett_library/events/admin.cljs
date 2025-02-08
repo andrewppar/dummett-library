@@ -15,7 +15,6 @@
 (rf/reg-event-db
  ::admin-success-db
  (fn [db [_ message]]
-   (println db)
    (-> db
        (assoc :admin-success message)
        (dissoc :admin-error))))
@@ -23,8 +22,6 @@
 (rf/reg-event-fx
  ::admin-success
  (fn [_ [_ {:keys [message] :as resp}]]
-   (println resp)
-   (println message)
    (rf/dispatch [::admin-success-db message])
    (rf/dispatch [::fetch-users])))
 
@@ -71,9 +68,6 @@
 (rf/reg-event-fx
  ::admin-failure
  (fn [_ {:keys [status] :as rsp}]
-   (println "HERE")
-   (println status)
-   (println rsp)
    (when (= status 401)
      (rf/dispatch [::login/remove-auth-token]))
    (rf/dispatch [::admin-error "unauthorized"])))

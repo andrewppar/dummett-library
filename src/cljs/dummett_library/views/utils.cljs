@@ -12,3 +12,6 @@
       :class (str "button " bulma-color)
       :on-click submit-fn}
      text]))
+
+(defn admin? [role]
+  (= role "admin"))

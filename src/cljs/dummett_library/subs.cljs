@@ -18,6 +18,10 @@
  (fn [db] (get db :token)))
 
 (rf/reg-sub
+ ::role
+ (fn [db] (get db :role)))
+
+(rf/reg-sub
  ::email
  (fn [db] (get db :email)))
 

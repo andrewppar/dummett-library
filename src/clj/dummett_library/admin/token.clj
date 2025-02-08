@@ -20,7 +20,8 @@
 
 (defn token [email password]
   (let [{:keys [status body] :as user-data} (user/fetch email)
-        parsed-body (json/parse-string body keyword)]
+        parsed-body (json/parse-string body keyword)
+        role (get parsed-body :role)]
     (if (> status 300)
       user-data
       (if (user/authenticated? password parsed-body)
@@ -28,13 +29,14 @@
               now (.toInstant (Date. (System/currentTimeMillis)))
               exp (.plus now (Duration/ofMinutes 30))]
           (.claim builder "email" email)
-          (.claim builder "role" (get parsed-body :role))
+          (.claim builder "role" role)
           (.setSubject builder email)
           (.setId builder (str (random-uuid)))
           (.setIssuedAt builder (Date/from now))
           (.setExpiration builder (Date/from exp))
           (.signWith builder hmacKey)
-          (http/success {:token (.compact builder) :email email}))
+          (http/success
+           {:token (.compact builder) :email email :role role}))
         (http/unauthorized)))))
 
 (defn parse-dispatch [auth-string]

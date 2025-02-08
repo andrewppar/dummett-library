@@ -116,8 +116,9 @@
      [:p.title  "Manage Users"]]]
    (when-let [success-message @(rf/subscribe [::subs/admin-success])]
      [notification success-message])
-   (let [auth-token @(rf/subscribe [::subs/token])]
-     (if (and auth-token (admin? auth-token))
+   (let [auth-token @(rf/subscribe [::subs/token])
+         role @(rf/subscribe [::subs/role])]
+     (if (and auth-token true (u/admin? role))
        [:div
         [add-user]
         [update-user]]

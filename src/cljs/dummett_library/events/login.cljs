@@ -6,17 +6,17 @@
 
 (rf/reg-event-db
  ::set-auth-db-internal
- (fn [db [_ email token]]
+ (fn [db [_ email token role]]
    (-> db
-       (assoc :email email :token token)
+       (assoc :email email :token token :role role)
        (dissoc :login-error))))
 
 (rf/reg-event-fx
  ::set-auth-token-internal
- (fn [_ [_ {:keys [email token]}]]
+ (fn [_ [_ {:keys [email token role]}]]
    (. js/sessionStorage setItem "token" token)
    (. js/sessionStorage setItem "email" email)
-   {:dispatch [::set-auth-db-internal email token]}))
+   {:dispatch [::set-auth-db-internal email token role]}))
 
 (rf/reg-event-db
  ::set-auth-error
