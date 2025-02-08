@@ -1,28 +1,15 @@
-(ns dummett-library.views
+(ns dummett-library.views.library
   (:require
    [clojure.string :as string]
-   [dummett-library.events :as events]
-   [dummett-library.subs   :as subs]
-   [re-frame.core          :as rf]
-   [reagent.core           :as r]))
-
-(defn navbar []
-  [:nav.navbar.is-inverted
-   {:class "navbar is-inverted is-fixed-top"}
-   [:div.container
-    [:div.navbar-brand [:a.navbar-item
-                        {:class "is-size-2"
-                         :href "/"
-                         :style {:font-weight :bold}} "𝜑 "]]
-    [:div.navbar-start
-     [:nav {:class "level"}
-      [:p {:class "level-item has-text-centered has-text-white is-size-2"}
-       "Dummett Library"]]]
-    ]])
+   [dummett-library.events.core :as events]
+   [dummett-library.subs :as subs]
+   [dummett-library.views.navigation :as nav]
+   [re-frame.core :as rf]
+   [reagent.core :as r]))
 
 (defn show-search-result [result]
   (let [fragment (first (get result :fragments))]
-    (r/with-let [hide?   (r/atom true)]
+    (r/with-let [hide? (r/atom true)]
       [:tr
        [:td (get result :page)
         [:button {:class "button is-info is-inverted is-small"
@@ -34,8 +21,9 @@
          [:table
           {:class (str "table " (when @hide? "is-hidden"))}
           [:tr
-           [:td [:div {:dangerouslySetInnerHTML {:__html fragment}}]]]]]
-        ]])))
+           [:td
+            [:div
+             {:dangerouslySetInnerHTML {:__html fragment}}]]]]]]])))
 
 (defn show-all-results [search-results]
   (map
@@ -45,8 +33,7 @@
        [:tr
         [:td (get result :type)]
         [:td [:b (get result :title)]]]
-       [show-search-result result]
-       ]])
+       [show-search-result result]]])
    search-results))
 
 (defn show-focal-result [focal-result]
@@ -65,7 +52,6 @@
                          (get :text)
                          (string/replace #"\n" "</br>"))}}]]
     [:footer.modal-card-foot (get focal-result :page)]]])
-    
 
 (defn search-result-section
   [search-results]
@@ -90,34 +76,41 @@
 (defn start-page []
   (let [search-results @(rf/subscribe [::subs/search-results])]
     [:div.app
-     [:div {:class "has-navbar-fixed-top"}
-      [navbar]
-      [:div.section {:class "is-small"}
-       [:div {:class "hero-body"}
-        [:div {:class "field has-addons"}
-         [:div.control
-          [:a {:class "button is-primary"
-               :on-click
-               (fn []
-                 (let [search-text (->> (getElementById "search-text")
-                                        (. js/document)
-                                        .-value)]
-                   (search search-text)))}
-           "Search"]]
-         [:div {:class "control is-expanded"}
-          [:input {:class "input"
-                   :type "text"
-                   :id "search-text"
-                   :on-key-press
-                   (fn [e]
-                     (when (= 13 (.-charCode e))
-                       (let [search-text (->> (getElementById "search-text")
-                                              (. js/document)
-                                              .-value)]
-                         (search search-text))))}]]]]]
-      [search-result-section search-results]
-      [:div.section {:class "is-small"}
-       [:button {:class "button is-danger"
-                 :on-click #(clear-search-results)}
-        "Clear"]]]]))
+     [:div.section {:class "is-small"}
+      [:div
+       [:div {:class "field has-addons"}
+        [:div.control
+         [:a {:class "button is-primary"
+              :on-click
+              (fn []
+                (let [search-text (->> (getElementById "search-text")
+                                       (. js/document)
+                                       .-value)]
+                  (search search-text)))}
+          "Search"]]
+        [:div {:class "control is-expanded"}
+         [:input {:class "input"
+                  :type "text"
+                  :id "search-text"
+                  :on-key-press
+                  (fn [e]
+                    (when (= 13 (.-charCode e))
+                      (let [search-text (->> (getElementById "search-text")
+                                             (. js/document)
+                                             .-value)]
+                        (search search-text))))}]]]]]
+     (when search-results
+       [:div.box
+        [search-result-section search-results]])
+     [:div.section {:class "is-small"}
+      [:button {:class "button is-danger"
+                :on-click #(clear-search-results)}
+       "Clear"]]]))
 
+(defn page []
+  ;; error handling
+  (when-let [page @(rf/subscribe [:common/page])]
+    [:div
+     {:class "has-navbar-fixed-top"}
+     [nav/navbar]
+     [:div.section [page]]]))

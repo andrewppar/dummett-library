@@ -1,0 +1,15 @@
+version: "0.5"
+
+processes:
+  backend/dev:
+    description: Run the backend interactively with nrepl server. NOTE - clojure routing must be started manually
+    command: clj -M:dev/repl
+  frontend/dev:
+    description: Run the frontend interactively wathcing for changes
+    command: npx shadow-cljs watch app
+  backend/run:
+    description: Dummett Library backend service for production
+    command: ./result/bin/dummett_library_backend
+  frontend/run:
+    description: Dummett Library frontend UI for production
+    command: ./result/bin/dummett_library_frontend

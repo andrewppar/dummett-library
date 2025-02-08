@@ -1,7 +1,6 @@
-(ns dummett-library.query
+(ns dummett-library.query.query
   (:require
-   [clojure.string        :as str]
-   [dummett-library.state :as state])
+   [clojure.string :as str])
   (:import
    (org.apache.lucene.analysis.standard StandardAnalyzer)
    (org.apache.lucene.index Term DirectoryReader)
@@ -11,8 +10,7 @@
     BooleanQuery$Builder ScoreDoc TopDocs TermQuery)
    (org.apache.lucene.search.highlight
     Highlighter QueryScorer SimpleSpanFragmenter TokenSources)
-   (org.apache.lucene.store NIOFSDirectory)
-   ))
+   (org.apache.lucene.store NIOFSDirectory)))
 
 (defn ^:private build-doc-types-clause
   [document-types]
@@ -22,6 +20,12 @@
        (let [term (->> document-type (Term. "type") TermQuery.)]
          (.add builder term BooleanClause$Occur/SHOULD)))
      nil document-types)
+    (.build builder)))
+
+(defn user-query [analyzer email]
+  (let [term (.parse (QueryParser. "email" analyzer) email)
+        builder  (BooleanQuery$Builder.)]
+    (.add builder term BooleanClause$Occur/MUST)
     (.build builder)))
 
 (defn new-query
@@ -37,7 +41,7 @@
         (.add builder doc-types-clause BooleanClause$Occur/MUST)))
     (.build builder)))
 
-(defn to-fragments
+(defn ^:private ->fragments
   [doc doc-id highlighter analyzer store]
   (let [text   (.get doc "text")
         stream (TokenSources/getAnyTokenStream
@@ -48,13 +52,8 @@
        (format "...%s..." (str/replace (str fragment) #"\n" "</br>")))
      frags)))
 
-(defn to-document
-  "Convert a Lucene ScoreDoc object
-  to a map"
+(defn ^:private ->document
   [^IndexSearcher searcher
-   ^StandardAnalyzer analyzer
-   ^Highlighter highlighter
-   ^NIOFSDirectory store
    ^ScoreDoc score-doc]
   (let [doc-id (.doc score-doc)
         doc (.doc searcher doc-id)
@@ -64,7 +63,7 @@
         ;; and whose values are vectors
         ;; of the values associated with that key.
         as-map (reduce (fn [acc
-                            ^org.apache.lucene.document.Field field]
+                           ^org.apache.lucene.document.Field field]
                          (let [field-key  (keyword (.name field))
                                new-value  (if-let [number (.numericValue field)]
                                             number
@@ -80,56 +79,94 @@
     ;; and don't do this reduction...
     ;; Maybe we need to track labels we expect
     ;; to have multiple values...
-    (assoc (reduce-kv (fn [result key value]
+    (reduce-kv (fn [result key value]
                  (if (and (vector? value)
                           (= (count (set value)) 1))
 
                    (assoc result key (first value))
                    (assoc result key value)))
-                      {} as-map)
-           :fragments (to-fragments
+               {} as-map)))
+
+(defn ^:private ->text-document
+  "Convert a Lucene ScoreDoc object
+  to a map"
+  [^IndexSearcher searcher
+   ^StandardAnalyzer analyzer
+   ^Highlighter highlighter
+   ^NIOFSDirectory store
+   ^ScoreDoc score-doc]
+  (let [doc-id (.doc score-doc)
+        doc (.doc searcher doc-id)]
+    (assoc (->document searcher score-doc)
+           :fragments (->fragments
                        doc doc-id highlighter analyzer store))))
 
-(defn score-search-results
+(defn score-text-search-results
   "Rank search results"
   [^TopDocs search-results
    ^IndexSearcher searcher
    ^StandardAnalyzer analyzer
    ^Highlighter highlighter
    ^NIOFSDirectory store]
-  (let [hits      (.scoreDocs search-results)
-        hit-idxs  (->> hits count range)]
-    (reduce (fn [acc doc-idx]
-              (->> doc-idx
-                   (nth hits)
-                   (to-document searcher analyzer highlighter store)
-                   (conj acc)))
-            [] hit-idxs)))
+  (map
+   (fn [doc-idx]
+     (let [score-doc (nth (.scoreDocs search-results) doc-idx)]
+       (->text-document searcher analyzer highlighter store score-doc)))
+   (range (count (.scoreDocs search-results)))))
+
+(defn serialize-user-search-results
+  "Show user results"
+  [^TopDocs search-results
+   ^IndexSearcher searcher]
+  (let [docs (.scoreDocs search-results)]
+    (map
+     (comp (partial ->document searcher) (partial nth docs))
+     (range (count docs)))))
 
 (defn query
   "Run a query against the index."
-  [searcher analyzer store query-string document-type]
-  (let [query         (new-query analyzer query-string document-type)
-        hits-per-page (get @state/state ::state/hits-per-page)
-        formatter     (get @state/state ::state/formatter)
-        scorer        (QueryScorer. query)
-        highlighter   (Highlighter. formatter scorer)
+  [searcher analyzer store formatter hits-per-page document-types query-string]
+  (let [query (new-query analyzer query-string document-types)
+        scorer (QueryScorer. query)
+        highlighter (Highlighter. formatter scorer)
         ;; I hardcoded the fragmentation size - I messed with it some
-        ;; I don't think we'll really need to worry about changing it. 
-        fragmenter    (SimpleSpanFragmenter. scorer 10)]
+        ;; I don't think we'll really need to worry about changing it.
+        fragmenter (SimpleSpanFragmenter. scorer 10)]
     (.setTextFragmenter highlighter fragmenter)
     (-> searcher
         (.search query hits-per-page)
-        (score-search-results searcher analyzer highlighter store))))
+        (score-text-search-results searcher analyzer highlighter store))))
 
-(defn ^:private all-items-internal
+(defn user
+  "Query for a user"
+  [searcher analyzer email]
+  (let [query (user-query analyzer email)]
+    (-> searcher
+        (.search query 2)
+        (serialize-user-search-results searcher))))
+
+(defn list-users
+  "List all users."
+  [searcher analyzer]
+  (let [user (.parse (QueryParser. "role" analyzer) "user")
+        admin (.parse (QueryParser. "role" analyzer) "admin")
+        inner-builder  (BooleanQuery$Builder.)]
+    (.add inner-builder user BooleanClause$Occur/SHOULD)
+    (.add inner-builder admin BooleanClause$Occur/SHOULD)
+    (let [inner-query (.build inner-builder)
+          builder (BooleanQuery$Builder.)]
+      (.add builder inner-query BooleanClause$Occur/MUST)
+      (let [query (.build builder)]
+        (-> searcher
+            (.search query 100)
+            (serialize-user-search-results searcher))))))
+
+
+(defn all-items
   [store field]
   (let [reader  (DirectoryReader/open store)
         indexes (range (.numDocs reader))]
     (->> indexes
-         (map
-          (fn [idx]
-            (-> reader (.document idx) (.get field))))
+         (map (fn [idx] (-> reader (.document idx) (.get field))))
+         (filter (complement nil?))
          distinct)))
-
-(def all-items (memoize all-items-internal))

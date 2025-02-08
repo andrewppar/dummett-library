@@ -1,0 +1,3 @@
+{:lint-as {dummett-library.log/defn-logged clojure.core/defn
+           dummett-library.store.core/with-transaction clj-kondo.lint-as/def-catch-all
+           reagent.core/with-let clojure.core/let}}

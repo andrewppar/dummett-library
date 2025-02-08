@@ -1,7 +1,7 @@
 (ns dummett-library.log
-  (:require  
-   [cheshire.core    :as cheshire]
-   [clojure.edn     :as edn]
+  (:require
+   [cheshire.core :as cheshire]
+   [clojure.edn :as edn]
    [taoensso.timbre :as timbre]))
 
 (defn ^:private log-output
@@ -20,13 +20,14 @@
     :error (timbre/error object)
     :fatal (timbre/fatal object)))
 
+(defn info [object]
+  (log :info object))
+
 (defn init
   "Initialize logging"
   [log-level]
   (timbre/merge-config! {:min-level log-level
                          :output-fn log-output}))
-
-
 
 (defn get-args [args]
   (reduce (fn [acc arg]
@@ -42,31 +43,24 @@
 
 (defmacro defn-logged
   [fn-name docstring logging-map args & body]
-  (when-not (and
-             (string? docstring)
-             (map? logging-map))
-    (throw
-     (ex-info (format "Cannot compile %s macro" fn-name)
-              {:caused-by '(not
-                            (and (string? ~docstring)
-                                 (map? ~logging-map)))})))
+  (when-not (and (string? docstring) (map? logging-map))
+    (throw (ex-info (format "Cannot compile %s macro" fn-name)
+                    {:caused-by '(not (and (string? ~docstring) (map? ~logging-map)))})))
   (let [fn-name-string (name fn-name)
-        result-fn      (if-let [res-fn (get logging-map :result-fn)]
-                         res-fn
-                         identity)
-        log-level      (get logging-map :log-level)
-        arg-map        (reduce (fn [acc arg]
-                                 (assoc acc (keyword arg) arg))
-                               {} (get-args args))
-        start-log      (assoc arg-map
-                              :status "starting"
-                              :event fn-name-string)]
+        result-fn (if-let [res-fn (get logging-map :result-fn)] res-fn identity)
+        log-level (get logging-map :log-level)
+        arg-map (reduce
+                 (fn [acc arg]
+                   (assoc acc (keyword arg) arg))
+                 {} (get-args args))
+        start-log (assoc arg-map
+                         :status "starting"
+                         :event fn-name-string)]
     `(defn ~fn-name ~docstring ~args
        (do
          (log ~log-level ~start-log)
          (let [result# (do ~@body)]
            (log ~log-level {:status "done"
-                        :event ~fn-name-string
-                        :result (~result-fn result#)})
+                            :event ~fn-name-string
+                            :result (~result-fn result#)})
            result#)))))
- 

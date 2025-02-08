@@ -1,6 +1,7 @@
 (ns dummett-library.parse
-  (:require [clojure.java.io :as io]
-            [clojure.xml     :as xml])
+  (:require
+   [clojure.java.io :as io]
+   [clojure.xml :as xml])
   (:import
    (org.apache.tika.parser.pdf PDFParser)
    (org.apache.tika.metadata Metadata)
@@ -11,10 +12,10 @@
   "Given the `filepath` of a pdf document generates a map representing
   an xml parse of that the pdf at `filepath`"
   [filepath]
-  (let [parser        (PDFParser.)
-        stream        (io/input-stream filepath)
-        handler       (ToXMLContentHandler.)
-        metadata      (Metadata.)
+  (let [parser (PDFParser.)
+        stream (io/input-stream filepath)
+        handler (ToXMLContentHandler.)
+        metadata (Metadata.)
         parse-context (ParseContext.)]
     (.parse parser stream handler metadata parse-context)
     (-> handler

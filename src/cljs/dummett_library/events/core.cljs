@@ -1,20 +1,30 @@
-(ns dummett-library.events
+(ns dummett-library.events.core
   (:require
-   [ajax.core                   :as ajax]
+   [ajax.core :as ajax]
    [day8.re-frame.http-fx]
-   [dummett-library.db          :as db]
-   [goog.string                 :as gstring]
-   [re-frame.core               :as rf]))
+   [dummett-library.db :as db]
+   [dummett-library.events.config :as cfg]
+   [goog.string :as gs]
+   [re-frame.core :as rf]
+   [reitit.frontend.controllers :as rfc]))
 
+(rf/reg-event-db
+ :common/navigate
+ (fn [db [_ match]]
+   (let [old-match (:common/route db)
+         new-match (assoc match :controllers
+                          (rfc/apply-controllers
+                           (:controllers old-match) match))]
+     (assoc db :common/route new-match))))
 
 (rf/reg-event-fx
  ::fetch-search-results
  (fn [_ [_ search-string]]
-   (let [encoded-search (gstring/urlEncode search-string "UTF-8")]
+   (let [encoded-search (gs/urlEncode search-string "UTF-8")]
      {:http-xhrio {:uri (str
-                         "http://" "localhost:4000"
+                         "http://" cfg/library-host
                          "/query?query-string=" encoded-search)
-                   :method :post
+                   :method :get
                    :format (ajax/transit-request-format)
                    :response-format (ajax/json-response-format
                                      {:keywords? true})
@@ -69,8 +79,43 @@
  ::set-foocal-result-event
  (fn [db  [_ focal-result]]
    (assoc db :focal-result focal-result)))
- 
+
 (rf/reg-event-db
  ::initialize-db
+ (fn [_ _] db/default-db))
+
+(rf/reg-event-fx
+ :fetch-start-page
  (fn [_ _]
-   db/default-db))
+   {:dispatch [:set-start-page]}))
+
+(rf/reg-event-fx
+ ::init-start-page
+ (fn [_ _]
+   {:dispatch [:fetch-start-page]}))
+
+(rf/reg-event-db
+ :set-start-page
+ (fn [db _]
+   (assoc db :start-page "")))
+
+(rf/reg-sub
+  :common/route
+  (fn [db _]
+    (-> db :common/route)))
+
+(rf/reg-sub
+  :common/page
+  :<- [:common/route]
+  (fn [route _]
+    (-> route :data :view)))
+
+(rf/reg-event-db
+ ::navbar-burger
+ (fn [db _]
+   (update db ::navbar-burger not)))
+
+(rf/reg-sub
+ ::navbar-burger
+ (fn [db _]
+   (get db ::navbar-burger)))

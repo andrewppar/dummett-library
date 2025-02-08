@@ -1,0 +1,50 @@
+## TODO: Make this into a full blown integration test
+
+## health-check
+GET http://localhost:4000/health-check
+Content-Type: application/json
+Accept: application/json
+
+## query
+GET http://localhost:4000/query?query-string=frege
+Content-Type: application/json
+Accept: application/json
+
+## login
+POST http://localhost:4000/login
+Content-Type: application/json
+Accept: application/json
+Authorization: Basic YW5wYXJpc2k6b25l
+
+## user
+POST http://localhost:4000/admin/user/add
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+
+{
+  "email": "george",
+  "password": "george",
+  "role": "user"
+}
+
+## delete user
+DELETE http://localhost:4000/admin/user/remove?email=george
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+
+## list users
+GET http://localhost:4000/admin/user/list
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+
+
+## edit user
+POST http://localhost:4000/admin/user/update
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+
+{"email": "george", "role": "admin"}

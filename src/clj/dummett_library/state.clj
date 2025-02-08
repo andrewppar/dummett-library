@@ -1,14 +1,9 @@
 (ns dummett-library.state
   (:require
-   [aero.core                :as aero]
-   [dummett-library.analyze  :as analyze]
-   [dummett-library.index    :as index]
-   [integrant.core           :as ig])
-  (:import 
-   (org.apache.lucene.search.highlight SimpleHTMLFormatter)))
-
-(defmethod ig/init-key ::catalog [_ _]
-  (aero/read-config "resources/catalog.edn"))
+   [dummett-library.store.analyze :as analyze]
+   [dummett-library.store.index :as index]
+   [dummett-library.query.format :as format]
+   [integrant.core :as ig]))
 
 (defmethod ig/init-key ::hits-per-page [_ _] 20)
 
@@ -24,7 +19,7 @@
 
 (defmethod ig/init-key ::formatter
   [_ _]
-  (SimpleHTMLFormatter.))
+  (format/make))
 
 (defmethod ig/init-key ::writer
   [_ {:keys [analyzer index-location]}]
@@ -35,35 +30,21 @@
     (.commit writer))
   (.close  writer))
 
-(defmethod ig/init-key ::searcher [_ {:keys [store]}]
-  (index/new-index-searcher store))
-
-(def run-config
-  {::catalog []
-   ::hits-per-page []
+(def config
+  {::hits-per-page []
    ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
-   ::analyzer []
-   ::searcher {:store (ig/ref ::store)}
-   ::formatter []})
-
-(def reindex-config
-  {::catalog []
-   ::index-location []
-   ::store {:index-location (ig/ref ::index-location)} 
-   ::analyzer []
+   ::store {:index-location (ig/ref ::index-location)}
    ::writer {:analyzer (ig/ref ::analyzer)
-             :index-location (ig/ref ::index-location)}})
+             :index-location (ig/ref ::index-location)}
+   ::analyzer []
+   ::formatter []})
 
 (def state (atom nil))
 
 (defn init! [init-type]
-  (let [config (case init-type
-                 :reindex reindex-config
-                 :run run-config)]
   (when-not (nil? @state)
     (ig/halt! @state))
-  (reset! state (ig/init config))))
+  (reset! state (ig/init config)))
 
 (defn halt! [& components]
   (if (seq components)
@@ -71,3 +52,17 @@
     (ig/halt! @state))
   (reset! state nil))
 
+(defn index-writer []
+  (get @state ::writer))
+
+(defn analyzer []
+  (get @state ::analyzer))
+
+(defn store []
+  (get @state ::store))
+
+
+(comment
+  (index-writer)
+
+  )
