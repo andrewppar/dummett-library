@@ -5,6 +5,7 @@
    [compojure.core :as compojure]
    [compojure.route :as route]
    [dummett-library.add :as add]
+   [dummett-library.admin.core :as admin]
    [dummett-library.admin.token :as token]
    [dummett-library.admin.user :as user]
    [dummett-library.http :as http]
@@ -24,6 +25,7 @@
   (log/info {:event "initialization" :status "starting"})
   (store/init!)
   (query/init!)
+  (admin/init!)
   (log/info {:event "initialization" :status "done"}))
 
 (defn-logged query

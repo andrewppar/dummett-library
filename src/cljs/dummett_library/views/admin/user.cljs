@@ -118,7 +118,7 @@
      [notification success-message])
    (let [auth-token @(rf/subscribe [::subs/token])
          role @(rf/subscribe [::subs/role])]
-     (if (and auth-token true (u/admin? role))
+     (if (and auth-token true #_(u/admin? role))
        [:div
         [add-user]
         [update-user]]
