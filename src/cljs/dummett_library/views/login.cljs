@@ -16,6 +16,8 @@
 (defn logout []
   (rf/dispatch [::login/remove-auth-token]))
 
+
+
 (defn page []
   [:div.app
    [:section.hero
@@ -33,17 +35,8 @@
            (when error
              [:div.block
               [:div.notification {:class "is-danger"} "Login failed"]])
-           [:div.block
-            [:label {:class "label"} "Email"]
-            [:div.control {:class "has-icons-left"}
-             [:input {:type "text" :id "email" :class "input"}]
-             [:span.icon {:class "is-small is-left"}
-              [:i {:class "fa fa-envelope" :aria-hidden true}]]]]
-           [:div.block
-            [:label {:class "label"} "Password"]
-            [:div.control {:class "has-icons-left"}
-             [:input {:type "password" :id "password" :class "input"}]
-             [:span.icon {:class "is-small is-left"}
-              [:i {:class "fa fa-lock" :aria-hidden true}]]]]
-           [:div
-            [u/button "Submit" submit-login-info]]])))]])
+           [u/input :text "email" "Email"
+            :placeholder "email address" :icon "fa fa-envelope"]
+           [u/input :password "password" "Password"
+            :placeholder "password" :icon "fa fa-lock"]
+           [:div [u/button "Submit" submit-login-info]]])))]])

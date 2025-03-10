@@ -22,11 +22,8 @@
      nil document-types)
     (.build builder)))
 
-(defn user-query [analyzer email]
-  (let [term (.parse (QueryParser. "email" analyzer) email)
-        builder  (BooleanQuery$Builder.)]
-    (.add builder term BooleanClause$Occur/MUST)
-    (.build builder)))
+(defn user-query [email]
+  (TermQuery. (Term. "email" (format "%s" email))))
 
 (defn new-query
   "Run a query for pages matching text"
@@ -139,8 +136,8 @@
 
 (defn user
   "Query for a user"
-  [searcher analyzer email]
-  (let [query (user-query analyzer email)]
+  [searcher email]
+  (let [query (user-query email)]
     (-> searcher
         (.search query 2)
         (serialize-user-search-results searcher))))

@@ -45,8 +45,8 @@
 
 (defn user
   "Get user with `email`"
-  [searcher analyzer email]
-  (query/user searcher analyzer email))
+  [searcher email]
+  (query/user searcher email))
 
 (defn list-users
   "List all users."

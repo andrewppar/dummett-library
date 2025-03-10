@@ -14,16 +14,6 @@
      (fn [] (rf/dispatch [::admin/remove-admin-success]))}]
    message])
 
-(defn dropdown [id & menu-items]
-  [:div.select {:class "is-rounded"}
-   (reduce
-    (fn [acc item]
-      (conj
-       acc
-       [:option {:id (str "dropdown" item)} item]))
-    [:select {:id id}]
-    menu-items)])
-
 (defn submit-add-user []
   (let [select (. js/document (getElementById "role-dropdown"))
         email (.-value (. js/document (getElementById "email")))
@@ -36,21 +26,13 @@
 (defn add-user []
   [:form.box
    [:h2.title {:class "is-3"} "Add User"]
-   [:div.block
-    [:label {:class "label"} "Email"]
-    [:div.control {:class "has-icons-left"}
-     [:input.input {:type "text" :id "email"}]
-     [:span.icon {:class "is-small is-left"}
-      [:i {:class "fa fa-envelope" :aria-hidden true}]]]]
-   [:div.block
-    [:label.label "Password"]
-    [:div.control {:class "has-icons-left"}
-     [:input.input {:type "password" :id "password"}]
-     [:span.icon {:class "is-small is-left"}
-      [:i {:class "fa fa-lock" :aria-hidden true}]]]]
+   (u/input :text "email" "Email"
+            :placeholder "email" :icon "fa fa-envelope")
+   (u/input :password "password" "Password"
+            :placeholder "password" "fa fa-lock")
    [:div.block
     [:label.label "Role"]
-    [dropdown "role-dropdown" "User" "Admin"]
+    [u/dropdown "role-dropdown" ["User" "Admin"] :rounded? true]
     [:button.button
      {:class "is-success is-rounded fa fa-plus"
       :style {:float "right"}
@@ -87,7 +69,8 @@
         [:div.column
          [:div.block
           [:label.label "Change Role"]
-          [:div.block [dropdown "update-role-dropdown" "User" "Admin"]]
+          [:div.block
+           [u/dropdown "update-role-dropdown" ["User" "Admin"] :rounded? true]]
           [:div.block
            [u/button "Update Role"
             (fn []

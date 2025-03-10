@@ -30,9 +30,8 @@
       (http/server-error "Failed to create user"))))
 
 (defn user-docs [email]
-  (let [searcher (searcher/make (store/store))
-        analyzer (store/analyzer)]
-    (query/user searcher analyzer email)))
+  (let [searcher (searcher/make (store/store))]
+    (query/user searcher email)))
 
 (defn fetch [email]
   (let [user (user-docs email)]
