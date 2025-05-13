@@ -136,3 +136,36 @@
        :on-success [::admin-success]
        :on-failure [::admin-failure]}}
      {:dispatch [::login/remove-auth-token]})))
+
+(rf/reg-event-db
+ ::document-success
+ (fn [db [_ {:keys [name]}]]
+   (update db :document-uploads (fnil assoc {}) name
+           {:status :success})))
+
+(rf/reg-event-db
+ ::document-failure
+ (fn [db [_ {:keys [name] :as response}]]
+   (update db :document-uploads (fnil assoc {}) name
+           {:status :fail :reason response})))
+
+(rf/reg-event-fx
+ ::document-add
+ (fn [_ [_ file name title document-type]]
+   (if-let [token (. js/sessionStorage getItem "token")]
+     ;; need to add page info, title info, and document type
+     (let [form-data (doto (js/FormData.)
+                       (.append "file" file)
+                       (.append "title" title)
+                       (.append "type" document-type)
+                       (.append "name" name))]
+       {:http-xhrio
+        {:uri (str "http://" cfg/library-host "/admin/document/add")
+         :method :post
+         :headers {:authorization (str "Bearer " token)}
+         :body form-data
+         :format (ajax/transit-request-format)
+         :response-format (ajax/json-response-format {:keywords? true})
+         :on-success [:document-succeses]
+         :on-failure [:document-failure]}})
+     {:dispatch [::login/remove-auth-token]})))

@@ -23,6 +23,9 @@
 (defn info [object]
   (log :info object))
 
+(defn warn [object]
+  (log :warn object))
+
 (defn init
   "Initialize logging"
   [log-level]

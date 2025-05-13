@@ -4,8 +4,7 @@
    [clojure.edn :as edn]
    [dummett-library.http :as http]
    [dummett-library.query.core :as query]
-   [dummett-library.store.core :as store]
-   [dummett-library.store.searcher :as searcher])
+   [dummett-library.store.core :as store])
   (:import
    (java.security SecureRandom)
    (javax.crypto SecretKeyFactory)
@@ -30,8 +29,7 @@
       (http/server-error "Failed to create user"))))
 
 (defn user-docs [email]
-  (let [searcher (searcher/make (store/store))]
-    (query/user searcher email)))
+  (query/user email))
 
 (defn fetch [email]
   (let [user (user-docs email)]
@@ -100,7 +98,7 @@
         (http/success (format "Updated %s" email))))))
 
 (defn list-all []
-  (->> (query/list-users (searcher/make (store/store)) (store/analyzer))
+  (->> (query/list-users (store/analyzer))
        (mapv (fn [user] (select-keys user [:email :role])))
        http/success))
 

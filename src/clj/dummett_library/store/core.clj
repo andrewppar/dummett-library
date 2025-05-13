@@ -80,9 +80,11 @@
 
 (defn add-document!
   ;; add offset for page count, etc...
-  [pages author title document-type]
+  [pages author title document-type & {:keys [archivist]}]
   (with-transaction writer
     (let [page-fn (partial document/page author title document-type)]
+      (.addDocument
+       writer (document/library-record author title document-type archivist))
       (->> pages
            (map-indexed
             (fn [index page] {:page-number (str (inc index)) :content page}))

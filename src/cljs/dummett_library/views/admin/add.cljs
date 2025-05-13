@@ -1,5 +1,7 @@
 (ns dummett-library.views.admin.add
   (:require
+   [clojure.string :as string]
+   [dummett-library.events.admin :as admin]
    [dummett-library.subs :as subs]
    [dummett-library.views.login :as login]
    [dummett-library.views.utils :as utils]
@@ -7,8 +9,16 @@
    [reagent.core :as r]))
 
 (defn get-document-name []
-  (when-let [add (. js/document (getElementById "add-document"))]
+  (when-let [add (utils/get-element "add-document")]
     (.-name (aget (.-files add) 0))))
+
+(defn get-document-type []
+  (let [select (utils/get-element "document-type")
+        idx (.-selectedIndex select)
+        options (.-options select)]
+    (string/lower-case (.-value (aget options idx)))))
+
+;;(defn get-document-numbering [])
 
 (defn upload-document [name]
   [:div.block
@@ -23,6 +33,14 @@
      (if @name
        [:span.file-name @name]
        [:span.file-name "No file uploaded"])]]])
+
+(defn upload-one! []
+  (when-let [element (utils/get-element "add-document")]
+    (let [file (aget (.-files element) 0)
+          name (.-name file)
+          title (.-value (utils/get-element "document-title"))
+          document-type (get-document-type)]
+      (rf/dispatch [::admin/document-add file name title document-type]))))
 
 (defn page-input [id page-numbers last?]
   [:div.field {:class "has-addons"}
@@ -47,6 +65,8 @@
         (fn []
           (swap! page-numbers (comp vec reverse (partial drop 1) reverse)))}]])])
 
+;; generalize this to have multiple documents that can be uploaded
+;; individually or all at once
 (defn page []
   [:div.app
    [:section.hero
@@ -56,16 +76,19 @@
      (r/with-let [name (r/atom (get-document-name))]
        (r/with-let [page-numbers (r/atom [0])]
          [:div.box
-          (if-not @name
-            (upload-document name)
-            ;; START HERE: this is where the input for file uploads
-            ;; needs to be decided on and formatted
+          (upload-document name)
+          (when @name
             [:div
-             [:div.block [:label.label (str "File: " @name)]]
              [:div.block
               [:label.label "Title"]
-              [:input.input
-               {:type "text" :id "document-title" :placeholder "Title"}]]
+              [:div.field {:class "has-addons"}
+               [:div.control
+                [:input.input
+                 {:type "text" :id "document-title" :placeholder "Title"}]]
+               [:div.control
+                [utils/dropdown
+                 "document-type" ["article" "book"]
+                 :rounded? true :title "document type"]]]]
              [:div.block
               [:label.label "Page Numbering"]
               (reduce
@@ -75,5 +98,7 @@
                [:div]
                (sort < @page-numbers))]
              [:div.block
-              (utils/button "upload" (fn [] (println "UP")))]])]))
+              (utils/button "upload" (fn []
+                                       (println "THERE")
+                                       (upload-one!)))]])]))
      [:div.section [login/page]])])

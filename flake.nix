@@ -39,6 +39,10 @@
          name = pname ;
          buildInputs = [ pkgs.process-compose ] ++ backend.deps ++ frontend.deps ;
          SECRET_KEY = "asdfSFS34wfsdfsdfSDSD32dfsddDDerQSNCK34SOWEK5354fdgdf4" ;
+         ADMIN_USERNAME = "anparisi" ;
+         ADMIN_PASSWORD = "one";
+         DOCUMENT_STORE = "/tmp/dummett/" ;
+         INDEX_LOCATION = "/opt/dummett/" ;
          shellHook =
            shell-fns + ''echo "Build the Dummett Library..."'';
        };

@@ -2,7 +2,7 @@
 let shell-fn = {name, commands}:
       let body = builtins.concatStringsSep "\n" commands ;
       in "function " + name + "() {\n" + body +  "\n}\n" ;
-    pcu = "process-compose -f build/process-compose.yml -t=false up" ;
+    pcu = "process-compose -f build/process-compose.yml up" ;
 in {
   build = shell-fn {
     name = "build" ;
@@ -27,7 +27,7 @@ in {
       ''        ${pcu} backend/dev frontend/dev''
       ''        ;;''
       ''    *)''
-      ''        echo "Cannot use $1: valid arguments are 'frontend' and 'backend'"''
+      ''        echo "Cannot use $1: valid arguments are 'frontend', 'backend', and 'all'"''
       ''        ;;''
       ''esac''
     ];

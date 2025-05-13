@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [compojure.core :as compojure]
    [compojure.route :as route]
-   [dummett-library.add :as add]
+   [dummett-library.admin.add :as add]
    [dummett-library.admin.core :as admin]
    [dummett-library.admin.token :as token]
    [dummett-library.admin.user :as user]
@@ -12,7 +12,6 @@
    [dummett-library.log :as log :refer [defn-logged]]
    [dummett-library.query.core :as query]
    [dummett-library.store.core :as store]
-   [dummett-library.store.searcher :as searcher]
    [org.httpkit.server :as server]
    [ring.middleware.cors :as cors]
    [ring.middleware.defaults :as middleware])
@@ -40,15 +39,11 @@
   {:log-level :info :result-fn count}
   [query-string &
    {:keys [document-types hits-per-page] :or {document-types []}}]
-  (let [analyzer (store/analyzer)
-        store (store/store)
-        searcher (searcher/make store)
-        doc-types (if (seq document-types)
+  (let [doc-types (if (seq document-types)
                     document-types
-                    (query/all-items store "type"))]
+                    (query/all-items "type"))]
     (map #(assoc % :query-string query-string)
-         (query/query
-          searcher analyzer store doc-types query-string
+         (query/query doc-types query-string
           :hits-per-page hits-per-page))))
 
 (defn health-check [_]
@@ -99,18 +94,78 @@
            (dissoc :type))))
    document-specs))
 
+(defn form-data-boundary
+  "Get the boundary in the form data body."
+  [{:keys [content-type]}]
+  (-> content-type
+      (string/split #";")
+      second
+      (string/split #"=")
+      second))
+
+(defn parse-form-datum [datum-string]
+  (let [datum-fields (string/split datum-string #"\r\n")
+        headers (reduce
+                 (fn [acc item]
+                   (if (= item "")
+                     (reduced acc)
+                     (conj acc item)))
+                 []
+                 (drop 1 datum-fields))
+        content-disposition (some
+                             (fn [header]
+                               (when (string/starts-with? header "Content-Disposition:")
+                                 header))
+                             headers)
+        name (when content-disposition
+               (some
+                (fn [field]
+                  (when (string/starts-with? (string/trim field) "name=")
+                    (second (string/split field #"="))))
+                (string/split content-disposition #";")))
+               body (first (second (split-at (+ 2 (count headers)) datum-fields)))]
+    {:name (or name :unknown) :body body}))
+
+(defn parse-form-data
+  [{:keys [body] :as request}]
+  (let [boundary (re-pattern
+                  (java.util.regex.Pattern/quote
+                   (form-data-boundary request)))
+        keyfn (fn [field-name]
+                (keyword (subs field-name 1 (dec (count field-name)))))]
+    (reduce
+     (fn [acc field]
+       (let [{:keys [name body]} (parse-form-datum field)]
+         (if (or (= name :unknown) (= name "unknown"))
+           acc
+           (assoc acc (keyfn name) body))))
+     {}
+     (string/split (slurp body :encoding "UTF-8") boundary))))
+
+
+
 (defn add-internal
   "The primary interface for adding documents."
   ;;  {:log-level :info :result-fn identity}
-  [{:keys [body]}]
-  (let [document-counts (-> body
+  [{{:strs [authorization]} :headers
+    :keys [body content-type] :as request}]
+  (let [{token-body :body} (token/parse authorization)
+        role (get-in (json/parse-string token-body) ["body" "role"])]
+    (if (user/admin? role)
+      ;; TODO
+      ;; this will get the pieces of the form data - we need to get them out
+      ;; and save th documents somwhere
+      (parse-form-data request)
+      (http/not-authorized))))
+  #_(let [document-counts (-> body
                             (slurp :encoding "UTF-8")
                             (json/parse-string keyword)
                             clean-document-specs
                             add/all!)]
-    document-counts))
+      document-counts)
 
-(defn add [req]
+
+(defn add-document! [req]
   {:status 200
    :body  (json/generate-string (add-internal req))})
 
@@ -180,7 +235,7 @@
 (compojure/defroutes app
   (compojure/GET "/health-check" [] health-check)
   (compojure/GET "/query" req (query-wrapper req))
-  (compojure/POST "/document/add" req (add req))
+  (compojure/POST "/admin/document/add" req (add-document! req))
   (compojure/POST "/admin/user/add" req (add-user! req))
   (compojure/GET "/admin/user/list" req (list-users req))
   (compojure/DELETE "/admin/user/remove" req (remove-user! req))

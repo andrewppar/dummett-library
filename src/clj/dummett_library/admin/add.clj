@@ -1,9 +1,10 @@
-(ns dummett-library.add
+(ns dummett-library.admin.add
   (:require
    [clojure.string :as string]
    [dummett-library.store.core :as store]
-   [dummett-library.parse :as parse]))
-
+   [dummett-library.log :as log]
+   [dummett-library.parse :as parse]
+   [dummett-library.query.core :as query]))
 
 (defn document-spec? [object]
   (and (map? object)
@@ -14,11 +15,24 @@
 (defn one!
   "Add pdf at `path` to the the library.
   `author`, `title`, and `document-type` must also be specified."
-  [{:keys [path author title document-type]}]
-  (let [pages (-> path parse/pdf->xml-map parse/xml-map-pages)]
-    {:title title
-     :author author
-     :pages-added (store/add-document! pages author title document-type)}))
+  [{:keys [path author title document-type archivist]}]
+  (if (seq (query/record :author author
+                         :title title
+                         :document-type document-type))
+    (log/warn {:message
+               (format
+                "Not adding %s: %s (%s). It already exists."
+                document-type title author)
+               :event "admin.add document"
+               :status "won't do"})
+    (let [pages (-> path parse/pdf->xml-map parse/xml-map-pages)]
+      {:title title
+       :author author
+       :archivist archivist
+       :pages-added
+       (store/add-document!
+        pages author title document-type
+        :archivist archivist)})))
 
 (defn all!
   "Add documents from document specifications."

@@ -12,27 +12,47 @@
     Highlighter QueryScorer SimpleSpanFragmenter TokenSources)
    (org.apache.lucene.store NIOFSDirectory)))
 
+(defn ^:private term [field value]
+  (TermQuery. (Term. field value)))
+
+(defn user-query [email]
+  (let [builder (BooleanQuery$Builder.)]
+    (.add builder (term "type" "user") BooleanClause$Occur/MUST)
+    (.add builder (term "email" email) BooleanClause$Occur/MUST)
+    (.build builder)))
+
+(defn record-query [author title document-type]
+  (let [builder (BooleanQuery$Builder.)]
+    (.add builder (term "type" "record") BooleanClause$Occur/MUST)
+    (when author
+      (.add builder (term "author" author) BooleanClause$Occur/MUST))
+    (when title
+      (.add builder (term "title" title) BooleanClause$Occur/MUST))
+    (when document-type
+      (.add builder (term "document-type" document-type) BooleanClause$Occur/MUST))
+    (.build builder)))
+
 (defn ^:private build-doc-types-clause
   [document-types]
   (let [builder (BooleanQuery$Builder.)]
+    ;; should be a run! ?
     (reduce
      (fn [_ document-type]
-       (let [term (->> document-type (Term. "type") TermQuery.)]
-         (.add builder term BooleanClause$Occur/SHOULD)))
-     nil document-types)
+       (let [term-query (term "document-type" document-type)]
+         (.add builder term-query BooleanClause$Occur/SHOULD)))
+     nil
+     document-types)
     (.build builder)))
 
-(defn user-query [email]
-  (TermQuery. (Term. "email" (format "%s" email))))
-
-(defn new-query
+(defn ^:private new-page-query
   "Run a query for pages matching text"
   [analyzer query document-types]
   (let [builder (BooleanQuery$Builder.)
-        term    (-> "text"
-                    (QueryParser. analyzer)
-                    (.parse query))]
-    (.add builder term BooleanClause$Occur/MUST)
+        text-term    (-> "text"
+                         (QueryParser. analyzer)
+                         (.parse query))]
+    (.add builder (term "type" "page") BooleanClause$Occur/MUST)
+    (.add builder text-term BooleanClause$Occur/MUST)
     (when (seq document-types)
       (let [doc-types-clause (build-doc-types-clause document-types)]
         (.add builder doc-types-clause BooleanClause$Occur/MUST)))
@@ -111,7 +131,7 @@
        (->text-document searcher analyzer highlighter store score-doc)))
    (range (count (.scoreDocs search-results)))))
 
-(defn serialize-user-search-results
+(defn serialize-search-results
   "Show user results"
   [^TopDocs search-results
    ^IndexSearcher searcher]
@@ -120,27 +140,13 @@
      (comp (partial ->document searcher) (partial nth docs))
      (range (count docs)))))
 
-(defn query
-  "Run a query against the index."
-  [searcher analyzer store formatter hits-per-page document-types query-string]
-  (let [query (new-query analyzer query-string document-types)
-        scorer (QueryScorer. query)
-        highlighter (Highlighter. formatter scorer)
-        ;; I hardcoded the fragmentation size - I messed with it some
-        ;; I don't think we'll really need to worry about changing it.
-        fragmenter (SimpleSpanFragmenter. scorer 10)]
-    (.setTextFragmenter highlighter fragmenter)
-    (-> searcher
-        (.search query hits-per-page)
-        (score-text-search-results searcher analyzer highlighter store))))
-
 (defn user
   "Query for a user"
   [searcher email]
   (let [query (user-query email)]
     (-> searcher
         (.search query 2)
-        (serialize-user-search-results searcher))))
+        (serialize-search-results searcher))))
 
 (defn list-users
   "List all users."
@@ -156,7 +162,28 @@
       (let [query (.build builder)]
         (-> searcher
             (.search query 100)
-            (serialize-user-search-results searcher))))))
+            (serialize-search-results searcher))))))
+
+(defn record
+  "Get all records matching `author`, `title`, or `document-type`."
+  [searcher author title document-type]
+  (-> searcher
+      (.search (record-query author title document-type) 500)
+      (serialize-search-results searcher)))
+
+(defn page
+  "Run a query for pages against the index."
+  [searcher analyzer store formatter hits-per-page document-types query-string]
+  (let [query (new-page-query analyzer query-string document-types)
+        scorer (QueryScorer. query)
+        highlighter (Highlighter. formatter scorer)
+        ;; I hardcoded the fragmentation size - I messed with it some
+        ;; I don't think we'll really need to worry about changing it.
+        fragmenter (SimpleSpanFragmenter. scorer 10)]
+    (.setTextFragmenter highlighter fragmenter)
+    (-> searcher
+        (.search query hits-per-page)
+        (score-text-search-results searcher analyzer highlighter store))))
 
 
 (defn all-items

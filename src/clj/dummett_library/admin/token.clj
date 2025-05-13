@@ -76,7 +76,7 @@
         token (second matches)
         parts (-> (Base64/getDecoder)
                   (.decode token)
-                  (slurp "UTF-8")
+                  (slurp :encoding "UTF-8")
                   (string/split #":"))]
     (if (= (count parts) 2)
       (http/success

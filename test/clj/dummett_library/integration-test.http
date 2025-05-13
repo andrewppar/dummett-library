@@ -20,7 +20,7 @@ Authorization: Basic YW5wYXJpc2k6b25l
 POST http://localhost:4000/admin/user/add
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI3NDMxYTAxYy1jOGViLTRkMjQtYjRiYy01NWJlOGI5YjA4YTkiLCJpYXQiOjE3NDE2MTkzNjMsImV4cCI6MTc0MTYyMTE2M30.LItBeMbAeZBKxzYyzydM1rTNWsVGqAz-GwviztIv8JQ
 
 {
   "email": "george",
@@ -32,22 +32,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6I
 DELETE http://localhost:4000/admin/user/remove?email=george
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+Authorization: Bearer
 
 ## list users
 GET http://localhost:4000/admin/user/list
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI1MmUwMDg2Mi01MDEwLTRiMWUtOTFmNC1hMTUyMDU0MjUxNmEiLCJpYXQiOjE3Mzg5ODc5MjksImV4cCI6MTczODk4OTcyOX0.HZBaDh9XJAIOaCnCWYxHZ9nOlB1hFsL_5JI2lt9le1A
-
-
-
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiI3NDMxYTAxYy1jOGViLTRkMjQtYjRiYy01NWJlOGI5YjA4YTkiLCJpYXQiOjE3NDE2MTkzNjMsImV4cCI6MTc0MTYyMTE2M30.LItBeMbAeZBKxzYyzydM1rTNWsVGqAz-GwviztIv8JQ
 
 ## edit user
 POST http://localhost:4000/admin/user/update
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFucGFyaXNpIiwicm9sZSI6ImFkbWluIiwic3ViIjoiYW5wYXJpc2kiLCJqdGkiOiIyNGFlYzJmYy0zM2MwLTQ2Y2ItOTI1ZS02ZGZhM2U1NDBiMmQiLCJpYXQiOjE3Mzg2NDQ5ODIsImV4cCI6MTczODY0Njc4Mn0.fT27D-aR7Fywk_tfqucPldV34CCTy8wBFLp4Lp6XhsY
+Authorization: Bearer
 
 {"email": "george", "role": "admin"}
