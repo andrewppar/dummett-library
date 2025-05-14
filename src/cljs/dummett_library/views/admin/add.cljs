@@ -18,7 +18,19 @@
         options (.-options select)]
     (string/lower-case (.-value (aget options idx)))))
 
-;;(defn get-document-numbering [])
+(defn get-document-numbering [page-numbers]
+  (mapv
+   (fn [id]
+     (let [dropdown (utils/get-element (str "numbering-dropdown-" id))
+           options (.-options dropdown)
+           idx (.-selectedIndex dropdown)
+           numbering-style (.-value (aget options idx))
+           slice-number (str "slice-index-" id)
+           page-number (str "page-number-" id)]
+       {:slice-number (.-value (utils/get-element slice-number))
+        :page-number (.-value (utils/get-element page-number))
+        :style numbering-style}))
+   @page-numbers))
 
 (defn upload-document [name]
   [:div.block
@@ -34,13 +46,14 @@
        [:span.file-name @name]
        [:span.file-name "No file uploaded"])]]])
 
-(defn upload-one! []
+(defn upload-one! [page-numbers]
   (when-let [element (utils/get-element "add-document")]
     (let [file (aget (.-files element) 0)
           name (.-name file)
           title (.-value (utils/get-element "document-title"))
-          document-type (get-document-type)]
-      (rf/dispatch [::admin/document-add file name title document-type]))))
+          document-type (get-document-type)
+          numbering (get-document-numbering page-numbers)]
+      (rf/dispatch [::admin/document-add file name title document-type numbering]))))
 
 (defn page-input [id page-numbers last?]
   [:div.field {:class "has-addons"}
@@ -49,7 +62,15 @@
      (str "numbering-dropdown-" id) ["1" "i" "I"]
      :rounded? true :title "numbering style"]]
    [:div.control
-    [:input.input {:type "text" :id id :placeholder "range start"}]]
+    [:input.input {:id (str "page-number-" id)
+                   :type "text"
+                   :title "This is the page number printed on the page that starts this range. For example, this could be 245 even when this is the first page of the document being uploaded."
+                   :placeholder "page number"}]]
+   [:div.control
+    [:input.input {:id (str "slice-index-" id)
+                   :type "text"
+                   :title "This is the page number of the document (usually pdf) itself that this numbering style starts on. For example, PDFs of articles will often have this number be 1 (the start of the document itself) while the page number is some large number representing the printed page number, e.g. 245, in the journal edition itself."
+                   :placeholder "slice index"}]]
    (if last?
      [:div.control
       [:button.button
@@ -90,7 +111,9 @@
                  "document-type" ["article" "book"]
                  :rounded? true :title "document type"]]]]
              [:div.block
-              [:label.label "Page Numbering"]
+              [:label.label "Page Numbering "
+               [:i {:class "fa fa-question-circle"
+                    :title "Use this field to input the page numbering scheme for the document. The numbering scheme is divided into slices - each slice represents a way of numbering pages for the document. For example, a book that has an Introduction with lower case roman numerals (i) starting on the logical page 3 and arabic numerals (1) starting on page 7 has two slices. The first slice is specified as \"i, 3, 1\" and the second as \"1, 7, 1\". Where the first component is the numbering style, the second component is where the slice starts in the document being uploaded, and the third part is the number that is visible on the first page of that slice in the document.\n\n There are defaults for all those positions: If no slices are specified, then one slice is assumed. That slices number is assumed to be arabic (1), starting on the first logical page, with 1 as the visible page number, i.e. the slice \"1, 1, 1\" is assumed. Those are also the default values for any slice where they are not specified."}]]
               (reduce
                (fn [result id]
                  (let [last? (= id (dec (count @page-numbers)))]
@@ -98,7 +121,5 @@
                [:div]
                (sort < @page-numbers))]
              [:div.block
-              (utils/button "upload" (fn []
-                                       (println "THERE")
-                                       (upload-one!)))]])]))
+              (utils/button "upload" (fn [] (upload-one! page-numbers)))]])]))
      [:div.section [login/page]])])

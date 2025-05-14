@@ -151,14 +151,14 @@
 
 (rf/reg-event-fx
  ::document-add
- (fn [_ [_ file name title document-type]]
+ (fn [_ [_ file name title document-type numbering]]
    (if-let [token (. js/sessionStorage getItem "token")]
-     ;; need to add page info, title info, and document type
      (let [form-data (doto (js/FormData.)
                        (.append "file" file)
                        (.append "title" title)
                        (.append "type" document-type)
-                       (.append "name" name))]
+                       (.append "name" name)
+                       (.append "numbering" (.stringify js/JSON (clj->js numbering))))]
        {:http-xhrio
         {:uri (str "http://" cfg/library-host "/admin/document/add")
          :method :post

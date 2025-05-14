@@ -30,11 +30,12 @@
 (defn library-record
   "Create a document that records the presence and metadata of another
   document."
+  ;; these have repeated fields - probably they should join on a document id
   [author title document-type archivist]
   (doto (make)
     (.add (new-field "type" "record" :string))
-    (.add (new-field "author" author :string))
-    (.add (new-field "title" title :string))
+    (.add (new-field "document-author" author :string))
+    (.add (new-field "document-title" title :string))
     (.add (new-field "document-type" document-type :string))
     (.add (new-field "archivist" archivist :string))))
 

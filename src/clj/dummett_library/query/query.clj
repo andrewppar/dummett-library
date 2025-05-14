@@ -25,9 +25,9 @@
   (let [builder (BooleanQuery$Builder.)]
     (.add builder (term "type" "record") BooleanClause$Occur/MUST)
     (when author
-      (.add builder (term "author" author) BooleanClause$Occur/MUST))
+      (.add builder (term "document-author" author) BooleanClause$Occur/MUST))
     (when title
-      (.add builder (term "title" title) BooleanClause$Occur/MUST))
+      (.add builder (term "document-title" title) BooleanClause$Occur/MUST))
     (when document-type
       (.add builder (term "document-type" document-type) BooleanClause$Occur/MUST))
     (.build builder)))
@@ -174,6 +174,8 @@
 (defn page
   "Run a query for pages against the index."
   [searcher analyzer store formatter hits-per-page document-types query-string]
+  (reset! args {:searcher searcher :analyzer analyzer :store store :formatter formatter :hits-per-page hits-per-page
+                :document-types document-types :query-string query-string})
   (let [query (new-page-query analyzer query-string document-types)
         scorer (QueryScorer. query)
         highlighter (Highlighter. formatter scorer)
@@ -184,7 +186,6 @@
     (-> searcher
         (.search query hits-per-page)
         (score-text-search-results searcher analyzer highlighter store))))
-
 
 (defn all-items
   [store field]

@@ -33,7 +33,10 @@
   (ig/halt! @state)
   (reset! state nil))
 
-(def all-items (memoize (partial query/all-items (store/store))))
+;;(def all-items (memoize (partial query/all-items (store/store))))
+
+(defn all-items [item-type]
+  (query/all-items (store/store) item-type))
 
 (defn query
   "Run a query for any pages matching `query-string`"
