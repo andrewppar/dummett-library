@@ -39,8 +39,10 @@
        [:a.navbar-item {:href "/"
                         :on-click (fn [] (reset! burger-active? false))} "Dummett Library"]]
       [:div.navbar-end
-       [:a.navbar-item {:href "#/login"
-                        :on-click (fn [] (reset! burger-active? false))} "login"]
+       (let [auth-token @(rf/subscribe [::subs/token])]
+         [:a.navbar-item {:href "#/login"
+                          :on-click (fn [] (reset! burger-active? false))}
+          (str (if auth-token "logout" "login") " page")])
        (let [auth-token @(rf/subscribe [::subs/token])]
          (when (and auth-token ;; admin-token
                     )
