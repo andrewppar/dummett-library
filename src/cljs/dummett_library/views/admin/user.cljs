@@ -29,7 +29,7 @@
    (u/input :text "email" "Email"
             :placeholder "email" :icon "fa fa-envelope")
    (u/input :password "password" "Password"
-            :placeholder "password" "fa fa-lock")
+            :placeholder "password" :icon "fa fa-lock")
    [:div.block
     [:label.label "Role"]
     [u/dropdown "role-dropdown" ["User" "Admin"] :rounded? true]

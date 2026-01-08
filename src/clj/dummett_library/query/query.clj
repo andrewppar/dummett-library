@@ -174,8 +174,6 @@
 (defn page
   "Run a query for pages against the index."
   [searcher analyzer store formatter hits-per-page document-types query-string]
-  (reset! args {:searcher searcher :analyzer analyzer :store store :formatter formatter :hits-per-page hits-per-page
-                :document-types document-types :query-string query-string})
   (let [query (new-page-query analyzer query-string document-types)
         scorer (QueryScorer. query)
         highlighter (Highlighter. formatter scorer)
