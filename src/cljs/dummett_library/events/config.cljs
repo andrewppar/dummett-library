@@ -1,3 +1,3 @@
 (ns dummett-library.events.config)
 
-(def library-host "localhost:4000")
+(def library-host "192.168.1.148:4000")

@@ -4,6 +4,7 @@
   com.taoensso/timbre {:mvn/version "5.2.1"}
   compojure/compojure {:mvn/version "1.6.1"}
   http-kit/http-kit {:mvn/version "2.3.0"}
+  clj-http/clj-http {:mvn/version "3.13.1"}
   integrant/integrant {:mvn/version "0.13.1"}
   io.jsonwebtoken/jjwt-api {:mvn/version "0.12.6"}
   io.jsonwebtoken/jjwt-impl {:mvn/version "0.12.6"}
