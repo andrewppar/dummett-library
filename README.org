@@ -1,7 +1,7 @@
 #+title: Dummett Library
 #+author: Andrew Parisi
 
-We all have had a quote from Dummett's writings on our mind before, but can't remember where h wrote it. The Dummett Library is the solution to that problem. This library lets users search for text in Dummett's writings. It returns the top matches for the search along with some context around the matched quote.
+We all have had a quote from Dummett's writings on our mind before, but can't remember where he wrote it. The Dummett Library is the solution to that problem. This library lets users search for text in Dummett's writings. It returns the top matches for the search along with some context around the matched quote.
 
 * Quick Start
 
