@@ -27,7 +27,7 @@ in {
       ''        ${pcu} backend/dev frontend/dev''
       ''        ;;''
       ''    *)''
-      ''        echo "Cannot use $1: valid arguments are 'frontend' and 'backend'"''
+      ''        echo "Cannot use $1: valid arguments are 'frontend', 'backend', and 'all'"''
       ''        ;;''
       ''esac''
     ];

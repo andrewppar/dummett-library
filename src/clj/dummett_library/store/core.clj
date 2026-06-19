@@ -42,11 +42,6 @@
 
 (def state (atom nil))
 
-(defn init! []
-  (when-not (nil? @state)
-    (ig/halt! @state))
-  (reset! state (ig/init config)))
-
 (defn halt! []
   (ig/halt! @state)
   (reset! state nil))
@@ -77,6 +72,13 @@
            (swap! state assoc ::writer new-writer#))
          (throw (Exception. error#))))
      (throw (ex-info "No index writer initialized." {}))))
+
+(defn init! []
+  (when-not (nil? @state)
+    (ig/halt! @state))
+  (reset! state (ig/init config))
+  ;; null transaction to ensure that the store exists
+  (with-transaction writer nil))
 
 (defn add-document!
   ;; add offset for page count, etc...
